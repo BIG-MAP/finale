@@ -1,11 +1,21 @@
-from typing import List
+from typing import List,Optional
 from pydantic import BaseModel, validator, Field
-from uuid import uuid4, UUID
+#from uuid import uuid4, UUID
 from enum import Enum
 
-class Origin(str, Enum):
+class OriginEnum(str, Enum):
     experiment = 'experiment'
     simulation = 'simulation'
+
+class Origin(BaseModel):
+    origin: OriginEnum
+
+class FOMEnum(str, Enum):
+    density = 'density'
+    viscosity = 'viscosity'
+
+class FOM(BaseModel):
+    origin: OriginEnum
 
 class Chemical(BaseModel):
     """This defines a chemical
@@ -109,6 +119,7 @@ class FomData(BaseModel):
     """
     value: float# = Field(...)
     unit: str# = Field(...)
+    name: str
     origin: Origin# = Field(...)
 
 class Measurement(BaseModel):
@@ -137,6 +148,6 @@ class Measurement(BaseModel):
     temperature: Temperature# = Field(...)
     pending: bool# = True
 
-    raw_data: RawData# = []
-    fom_data: FomData# = []
+    raw_data: Optional[RawData]# = []
+    fom_data: Optional[FomData]# = []
     # TODO: if pending True raw and fom may not be set!
