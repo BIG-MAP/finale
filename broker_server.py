@@ -8,7 +8,7 @@ import schemas_pydantic
 from uuid import uuid4
 
 
-app = FastAPI(title="fastALE main server",
+app = FastAPI(title="fastALE broker server",
               description="main server accepting requests and serving queries",
               version="0.1")
 

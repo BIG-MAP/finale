@@ -98,21 +98,14 @@ class Formulation(BaseModel):
                                   Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F',name='LiPF6',reference='LiPF6_Elyte_2020')],
                        amounts=[Amount(value=0.5,unit='mol'),Amount(value=0.1,unit='mol')],
                        name='LiPF6_salt_in_PC_5:1')
-    form_1 = Formulation(compounds=[A,B],ratio=[3,1])
+    form_1 = Formulation(compounds=[A,B],ratio=[3,1],ratio_method='volumetric')
     """
     # A formulation can consist
     compounds: List[Compound] = Field(...)
     ratio: List[float] = Field(...)
+    ratio_method: str = Field(...)
     # TODO: Validate that len matches
     # TODO: Tinker about ratios and ambiguities
-
-class RawData(BaseModel):
-    """This is a wrapper for arbitrary dict type data
-
-    TODO: This could potentially be improved such that one is not able to upload garbage
-    """
-    data: dict# = []
-    description: str# = []
 
 class FomData(BaseModel):
     """This is a wrapper for figure of merit (FOM) i.e. scalar data
@@ -120,10 +113,11 @@ class FomData(BaseModel):
     Example:
         fom_1 = FomData(value=3,unit="g/cm**3",origin="experiment")
     """
-    value: float# = Field(...)
-    unit: str# = Field(...)
-    name: str
-    origin: Origin# = Field(...)
+    value: float = Field(...)
+    unit: str = Field(...)
+    name: str = Field(...)
+    origin: Origin = Field(...)
+    measurement_id: str = Field(...)
 
 class Measurement(BaseModel):
     """A Measurement is done on a Formulation and contains data
@@ -137,20 +131,19 @@ class Measurement(BaseModel):
                                   Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F',name='LiPF6',reference='LiPF6_Elyte_2020')],
                        amounts=[Amount(value=0.5,unit='mol'),Amount(value=0.1,unit='mol')],
                        name='LiPF6_salt_in_PC_5:1')
-    form_1 = Formulation(compounds=[A,B],ratio=[3,1])
+    form_1 = Formulation(compounds=[A,B],ratio=[3,1],ratio_method='volumetric')
 
     temp_1 = Temperature(unit='K',value=380)
 
-    fom_1 = FomData(value=3,unit="g/cm**3",origin="experiment")
+    fom_1 = FomData(value=3,unit="g/cm**3",origin="experiment",measurement_id='123')
 
-    meas_1 = Measurement(formulation=form_1, temperature=temp_1,pending=True,fom_data=fom_1)
+    meas_1 = Measurement(formulation=form_1, temperature=temp_1,pending=True,fom_data=fom_1,kind='experiment')
 
     """
     #ID: UUID = Field(default_factory=uuid4)
     formulation: Formulation# = Field(...)
     temperature: Temperature# = Field(...)
     pending: bool# = True
-
-    raw_data: Optional[RawData]# = []
     fom_data: Optional[FomData]# = []
+    kind: Origin
     # TODO: if pending True raw and fom may not be set!
