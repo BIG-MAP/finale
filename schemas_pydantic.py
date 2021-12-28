@@ -10,6 +10,9 @@ class OriginEnum(str, Enum):
 class Origin(BaseModel):
     origin: OriginEnum
 
+class ok(BaseModel):
+    typeob: str
+
 class FOMEnum(str, Enum):
     density = 'density'
     viscosity = 'viscosity'

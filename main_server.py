@@ -1,8 +1,12 @@
 import sys
 import uvicorn
 from fastapi import FastAPI
-import os
+import sqlite3
+import config
+import db
 import schemas_pydantic
+from uuid import uuid4
+
 
 app = FastAPI(title="fastALE main server",
               description="main server accepting requests and serving queries",
@@ -11,12 +15,21 @@ app = FastAPI(title="fastALE main server",
 
 @app.get("/post/chemical")
 def post_chemical(chemical: schemas_pydantic.Chemical):
-    pass
+    """
+    Experimentalists or theorists may post chemicals they can work with
+    :param chemical: A Chemical object that contains the name smiles and reference
+    :type chemical: Chemical validator
+    :return: success return
+    :rtype:
+    """
+    id_ = db.add_chemical(cur,chemical)
+    return {"message":"recieved Chemical", "id":id_}
 
 
 @app.get("/post/compound")
-def activate(compound: schemas_pydantic.Compound):
-    pass
+def post_compound(compound: schemas_pydantic.Compound):
+    id_ = db.add_compound(cur, compound)
+    return {"message": "recieved Compound", "id": id_}
 
 @app.get("/get/all_chemicals")
 def activate():
@@ -29,9 +42,13 @@ def activate():
 
 
 @app.get("/get/measurement/by_id")
-def by_id(id: str):
-    pass
+def by_id(id__: str):
+    try:
+        id_ = UUID(id__).hex()
+        ret = query(table="measurement", match="id", value=id_)
 
+    except ValueError:
+        return False
 
 @app.get("/get/all_fom")
 def all_fom(origin: schemas_pydantic.Origin, name:schemas_pydantic.FOM):
@@ -55,4 +72,5 @@ def release():
 
 
 if __name__ == "__main__":
+
     uvicorn.run(app, host=config['servers'][serverkey]['host'], port=config['servers'][serverkey]['port'])
