@@ -45,16 +45,33 @@ def post_compound(compound: schemas_pydantic.Compound):
 
 @app.get("/get/all_chemicals")
 def get_all_chemicals():
+    """
+
+    :return:
+    :rtype:
+    """
     pass
 
 
 @app.get("/get/all_compounds")
 def get_all_compounds():
+    """
+
+    :return:
+    :rtype:
+    """
     pass
 
 
 @app.get("/get/measurement/by_id")
 def by_id(id__: str):
+    """
+
+    :param id__:
+    :type id__:
+    :return:
+    :rtype:
+    """
     try:
         id_ = UUID(id__).hex()
         ret = query(table="measurement", match="id", value=id_)
@@ -65,21 +82,49 @@ def by_id(id__: str):
 
 @app.get("/get/all_fom")
 def all_fom(origin: schemas_pydantic.Origin, name:schemas_pydantic.FOM):
+    """
+
+    :param origin:
+    :type origin:
+    :param name:
+    :type name:
+    :return:
+    :rtype:
+    """
     pass
 
 
 @app.get("/post/measurement")
 def post_measurement(compound: schemas_pydantic.Measurement):
+    """
+
+    :param compound:
+    :type compound:
+    :return:
+    :rtype:
+    """
     pass
 
 
 @app.get("/request/measurement")
 def request_meas(compound: schemas_pydantic.Measurement):
+    """
+
+    :param compound:
+    :type compound:
+    :return:
+    :rtype:
+    """
     pass
 
 
 @app.on_event("shutdown")
 def release():
+    """
+
+    :return:
+    :rtype:
+    """
     pass
 
 
