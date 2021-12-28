@@ -147,3 +147,6 @@ class Measurement(BaseModel):
     fom_data: Optional[FomData]# = []
     kind: Origin
     # TODO: if pending True raw and fom may not be set!
+
+class Message(BaseModel):
+    message: dict = None

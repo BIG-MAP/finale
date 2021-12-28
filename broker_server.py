@@ -1,11 +1,8 @@
-import sys
 import uvicorn
 from fastapi import FastAPI
-import sqlite3
 import config
 import db
 import schemas_pydantic
-from uuid import uuid4
 
 
 app = FastAPI(title="fastALE broker server",
@@ -13,7 +10,7 @@ app = FastAPI(title="fastALE broker server",
               version="0.1")
 
 
-@app.get("/post/chemical")
+@app.post("/post/chemical")
 def post_chemical(chemical: schemas_pydantic.Chemical):
     """
     Experimentalists or theorists may post chemicals they can work with
@@ -22,22 +19,37 @@ def post_chemical(chemical: schemas_pydantic.Chemical):
     :return: success return
     :rtype:
     """
-    id_ = db.add_chemical(cur,chemical)
+    db_ = db.dbinteraction()
+    id_ = db_.add_chemical(chemical)
+    db_.con.commit()
+    db_.con.close()
     return {"message":"recieved Chemical", "id":id_}
 
 
-@app.get("/post/compound")
+@app.post("/post/compound")
 def post_compound(compound: schemas_pydantic.Compound):
-    id_ = db.add_compound(cur, compound)
+    """
+    Experimentalists may post compounds in the setup
+
+    :param compound:
+    :type compound:
+    :return:
+    :rtype:
+    """
+    db_ = db.dbinteraction()
+    id_ = db_.add_compound(compound)
+    db_.con.commit()
+    db_.con.close()
     return {"message": "recieved Compound", "id": id_}
 
+
 @app.get("/get/all_chemicals")
-def activate():
+def get_all_chemicals():
     pass
 
 
 @app.get("/get/all_compounds")
-def activate():
+def get_all_compounds():
     pass
 
 
@@ -50,20 +62,20 @@ def by_id(id__: str):
     except ValueError:
         return False
 
+
 @app.get("/get/all_fom")
 def all_fom(origin: schemas_pydantic.Origin, name:schemas_pydantic.FOM):
     pass
 
 
 @app.get("/post/measurement")
-def pos_meas(compound: schemas_pydantic.Measurement):
+def post_measurement(compound: schemas_pydantic.Measurement):
     pass
 
 
 @app.get("/request/measurement")
-def req_meas(compound: schemas_pydantic.Measurement):
+def request_meas(compound: schemas_pydantic.Measurement):
     pass
-
 
 
 @app.on_event("shutdown")
@@ -72,5 +84,6 @@ def release():
 
 
 if __name__ == "__main__":
-
-    uvicorn.run(app, host=config['servers'][serverkey]['host'], port=config['servers'][serverkey]['port'])
+    db_ = db.dbinteraction()
+    db_.reset()
+    uvicorn.run(app, host='localhost', port=13370)
