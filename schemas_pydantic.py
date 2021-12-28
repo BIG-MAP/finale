@@ -134,8 +134,8 @@ class Measurement(BaseModel):
     form_1 = Formulation(compounds=[A,B],ratio=[3,1],ratio_method='volumetric')
 
     temp_1 = Temperature(unit='K',value=380)
-
-    fom_1 = FomData(value=3,unit="g/cm**3",origin="experiment",measurement_id='123')
+    orig_1 = Origin(origin='experiment')
+    fom_1 = FomData(value=3,unit="g/cm**3",origin=orig_1,measurement_id='123',name='Density')
 
     meas_1 = Measurement(formulation=form_1, temperature=temp_1,pending=True,fom_data=fom_1,kind='experiment')
 

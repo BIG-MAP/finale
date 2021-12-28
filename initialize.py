@@ -50,3 +50,7 @@ orig_1 = schemas_pydantic.Origin(origin='experiment')
 meas_1 = schemas_pydantic.Measurement(formulation=form_1, temperature=temp_1, pending=True, kind=orig_1)
 
 id_form1 = db.add_measurement(cur,meas_1)
+
+fom_1 = schemas_pydantic.FomData(value=3,unit="g/cm**3",origin=orig_1,measurement_id='123',name='Density')
+
+meas_2 = schemas_pydantic.Measurement(formulation=form_1, temperature=temp_1, pending=True, kind=orig_1,fom_data=fom_1)
