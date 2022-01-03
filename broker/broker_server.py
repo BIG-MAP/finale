@@ -1,14 +1,17 @@
+import os,sys
+rootp = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+sys.path.append(os.path.join(rootp, 'config'))
+sys.path.append(os.path.join(rootp, 'db'))
+
 import uvicorn
-from fastapi import FastAPI,status
-import config
-import db
-import schemas_pydantic
+from fastapi import FastAPI
+import config, db, schemas_pydantic
 from uuid import UUID
 
 
 app = FastAPI(title="finale broker server",
               description="main server accepting requests and serving queries",
-              version="0.1")
+              version="0.2")
 
 
 @app.post("/api/broker/post/chemical")
@@ -53,11 +56,10 @@ def get_all_chemicals():
     db_.con.commit()
     db_.con.close()
     # go through all responses to make a
-    mlist = []
+    mlist = {}
     for r in response:
         json_ = schemas_pydantic.Chemical.parse_raw(r[-2])
-        mlist.append(json_)
-    print(mlist)
+        mlist[r[-1]] = json_
     return mlist
 
 
@@ -71,10 +73,10 @@ def get_all_compounds():
     db_.con.commit()
     db_.con.close()
     # go through all responses to make a
-    mlist = []
+    mlist = {}
     for r in response:
         json_ = schemas_pydantic.Compound.parse_raw(r[-2])
-        mlist.append(json_)
+        mlist[r[-1]] = json_
     return mlist
 
 
@@ -105,23 +107,34 @@ async def all_fom(fom_name: str):
     db_.con.commit()
     db_.con.close()
     # go through all responses to make a
-    mlist = []
+    mlist = {}
     for r in response:
         json_ = schemas_pydantic.Measurement.parse_raw(r[-2])
         if json_.fom_data.name == fom_name:
-            mlist.append(json_)
+            mlist[r[-1]] = json_
+    return mlist
+
+
+@app.get("/api/broker/get/pending")
+async def get_pending(fom_name: str):
+    # get all the measurement ids where pending is false
+    db_ = db.dbinteraction()
+    response = db_.query_X_by_Y('measurements', 'pending', True, return_all=True)
+    row_meas = db_.cur.fetchall()  # expect this to be unique and return id
+
+    db_.con.commit()
+    db_.con.close()
+    # go through all responses to make a
+    mlist = {}
+    for r in response:
+        json_ = schemas_pydantic.Measurement.parse_raw(r[-2])
+        if json_.kind.what == fom_name:
+            mlist[r[-1]] = json_
     return mlist
 
 
 @app.post("/api/broker/post/measurement")
-def post_measurement(measurement: schemas_pydantic.Measurement,request_id: str = None):
-    """
-
-    :param compound:
-    :type compound:
-    :return:
-    :rtype:
-    """
+def post_measurement(measurement: schemas_pydantic.Measurement, request_id: str = None):
 
     # check if not pending
     if measurement.pending:
@@ -132,23 +145,28 @@ def post_measurement(measurement: schemas_pydantic.Measurement,request_id: str =
 
     db_ = db.dbinteraction()
     id_ = db_.add_measurement(measurement)
+
+    if not request_id == None:
+        request_id = UUID(request_id).hex
+        db_ = db.dbinteraction()
+        sql_update_query = "update measurements set pending = False where id = ?"
+        db_.cur.execute(sql_update_query, (request_id,))
+
+        db_.con.commit()
+        db_.con.close()
+        return {"message": "recieved pending measurement",
+                "id_measurement": id_,
+                "id_request":request_id}
+
     db_.con.commit()
     db_.con.close()
-
     #change the
 
-    return {"message": "recieved measurement", "id": id_}
+    return {"message": "recieved UNSOLICITED measurement", "id": id_}
 
 
 @app.post("/api/broker/request/measurement")
 def request_meas(measurement: schemas_pydantic.Measurement):
-    """
-
-    :param compound:
-    :type compound:
-    :return:
-    :rtype:
-    """
     # check if really pending
     if not measurement.pending:
         return {"message": "posted measurement as request that is not pending", "id": -1}
@@ -159,6 +177,7 @@ def request_meas(measurement: schemas_pydantic.Measurement):
         return {"message": "Not specified what to measure", "id": -1}
     db_ = db.dbinteraction()
     id_ = db_.add_measurement(measurement)
+    print(id_)
     db_.con.commit()
     db_.con.close()
     return {"message": "recieved measurement request", "id": id_}

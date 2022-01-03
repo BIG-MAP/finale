@@ -1,6 +1,5 @@
 from typing import List,Optional
 from pydantic import BaseModel, validator, Field
-#from uuid import uuid4, UUID
 from enum import Enum
 
 class Message(BaseModel):

@@ -1,3 +1,8 @@
+import os,sys
+rootp = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+sys.path.append(os.path.join(rootp, 'config'))
+sys.path.append(os.path.join(rootp, 'db'))
+
 import sqlite3
 from uuid import uuid4
 import config
@@ -86,7 +91,9 @@ class dbinteraction:
             return {"message": "fail"}
 
     def query_X_by_Y(self, X, Y, value,return_all=False):
-        self.cur.execute("select * from {} where {}=:iquery".format(X,Y), {"iquery": value})
+        #this is potentially very unsafe and should not handle arguments passed
+        #by the user or only such that are checked
+        self.cur.execute("select * from {} where {}=?".format(X,Y),(value,))
         rows = self.cur.fetchall()#expect this to be unique and return id
         if return_all:
             return rows
@@ -120,13 +127,13 @@ class dbinteraction:
         for chemical in compound.chemicals:
             chemical_ids.append(self.add_chemical(chemical))
             chem_i += 1
-        for i in [i for i in range(chem_i,config.MAX_D)]:
+        for i in [i for i in range(chem_i, config.MAX_D)]:
             chemical_ids.append('-1')
         amount_values,amount_units= [],[]
         for amount in compound.amounts:
             amount_values.append(amount.value)
             amount_units.append(amount.unit)
-        for i in [i for i in range(chem_i,config.MAX_D)]:
+        for i in [i for i in range(chem_i, config.MAX_D)]:
             amount_values.append('-1')
             amount_units.append('Mol')
         id_ = uuid4().hex
@@ -160,7 +167,7 @@ class dbinteraction:
         return id_
 
 
-    def add_fom(self,fom: schemas_pydantic.FomData,measurement_id_):
+    def add_fom(self, fom: schemas_pydantic.FomData, measurement_id_):
         id_ = uuid4().hex
         arr = [fom.value,fom.unit,fom.name,fom.origin.origin.value,measurement_id_,id_]
         qstr = '('+','.join(['?' for i in range(len(arr))])+')'
@@ -168,11 +175,11 @@ class dbinteraction:
         return id_
 
 
-    def add_measurement(self,measurement: schemas_pydantic.Measurement):
-        id_ = uuid4().hex
+    def add_measurement(self, measurement: schemas_pydantic.Measurement):
+        id_me = uuid4().hex
         try:
             fom_data = measurement.fom_data
-            fom_id_ = self.add_fom(fom_data,measurement_id_=id_)
+            fom_id_ = self.add_fom(fom_data,measurement_id_=id_me)
         except AttributeError:
             fom_id_ = -1
         formulation_id = self.add_formulation(measurement.formulation)
@@ -181,11 +188,16 @@ class dbinteraction:
         pending = measurement.pending
         kind = measurement.kind.origin.value
         json_ = measurement.json()
-        arr = [formulation_id,temperature_value,temperature_unit,pending,fom_id_,kind,json_, id_]
+        arr = [formulation_id,temperature_value,temperature_unit,pending,fom_id_,kind,json_, id_me]
         qstr = '(' + ','.join(['?' for i in range(len(arr))]) + ')'
         self.cur.execute("insert into measurements values {}".format(qstr),arr)
+        print(id_me)
+        return id_me
 
-        return id_
+    def get_pending(self):
+        self.cur.execute("select * from measurements where pending=True")
+        rows = self.cur.fetchall()  # expect this to be unique and return id
+        return rows
 
     def query_measurement_by_id(self,id_):
         self.cur.execute("select * from measurements where id=:iquery", {"iquery": id_})
@@ -213,4 +225,4 @@ class dbinteraction:
 
         msg = reset(cur)
 
-        return msg,cur,con,config.db_file
+        return msg, cur, con, config.db_file
