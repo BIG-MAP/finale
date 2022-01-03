@@ -110,8 +110,10 @@ async def all_fom(fom_name: str):
     mlist = {}
     for r in response:
         json_ = schemas_pydantic.Measurement.parse_raw(r[-2])
-        if json_.fom_data.name == fom_name:
-            mlist[r[-1]] = json_
+        print(json_.fom_data)
+        if not json_.fom_data == None:
+            if json_.fom_data.name == fom_name:
+                mlist[r[-1]] = json_
     return mlist
 
 
@@ -145,8 +147,12 @@ def post_measurement(measurement: schemas_pydantic.Measurement, request_id: str 
 
     db_ = db.dbinteraction()
     id_ = db_.add_measurement(measurement)
+    db_.con.commit()
+    db_.con.close()
 
     if not request_id == None:
+        db_ = db.dbinteraction()
+
         request_id = UUID(request_id).hex
         db_ = db.dbinteraction()
         sql_update_query = "update measurements set pending = False where id = ?"
@@ -157,10 +163,6 @@ def post_measurement(measurement: schemas_pydantic.Measurement, request_id: str 
         return {"message": "recieved pending measurement",
                 "id_measurement": id_,
                 "id_request":request_id}
-
-    db_.con.commit()
-    db_.con.close()
-    #change the
 
     return {"message": "recieved UNSOLICITED measurement", "id": id_}
 
