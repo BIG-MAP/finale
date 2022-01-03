@@ -3,12 +3,17 @@ from pydantic import BaseModel, validator, Field
 #from uuid import uuid4, UUID
 from enum import Enum
 
+class Message(BaseModel):
+    message: str
+    id: int
+
 class OriginEnum(str, Enum):
     experiment = 'experiment'
     simulation = 'simulation'
 
 class Origin(BaseModel):
     origin: OriginEnum
+    what: Optional[str]
 
 class ok(BaseModel):
     typeob: str
@@ -66,7 +71,7 @@ class Amount(BaseModel):
 
     @validator('unit')
     def amount_unit_validator(cls, v):
-        if v != 'mol':
+        if not v in ['mol','Mol']:
             raise ValueError('Unit must be mol')
         return v.title()
 

@@ -9,31 +9,29 @@ class dbinteraction:
         self.cur = self.con.cursor()
 
     def reset(self):
-        # origins
-        self.cur.execute("create table origins (origin, id)")
         # chemicals
-        self.cur.execute("create table chemicals (smiles, name, reference, id)")
+        self.cur.execute("create table chemicals (smiles, name, reference, json, id)")
         # compounds
         amounts_value = ', '.join(['amounts_value{}'.format(i) for i in range(config.MAX_D)])
         amounts_unit = ', '.join(['amounts_unit{}'.format(i) for i in range(config.MAX_D)])
         chem_id_str = ', '.join(['chemical_id{}'.format(i) for i in range(config.MAX_D)])
-        self.cur.execute("create table compounds (" + chem_id_str + ", " + amounts_value + ", " + amounts_unit + " ,name, id)")
+        self.cur.execute("create table compounds (" + chem_id_str + ", " + amounts_value + ", " + amounts_unit + " ,name ,json , id)")
         # formulations
         ratios_str = ', '.join(['ratio{}'.format(i) for i in range(config.MAX_D)])
         compound_id_str = ', '.join(['compound_id{}'.format(i) for i in range(config.MAX_D)])
-        self.cur.execute("create table formulations (" + compound_id_str + ", " + ratios_str + " ,ratio_method , id)")
+        self.cur.execute("create table formulations (" + compound_id_str + ", " + ratios_str + " ,ratio_method ,json, id)")
         # fom data json table
         self.cur.execute("create table fomdata (value, unit, name, origin, measurement_id, id)")
         #measurement table
-        self.cur.execute("create table measurements (formulation_id,temperature_value,temperature_unit,pending,fom_data_id,kind, id)")
+        self.cur.execute("create table measurements (formulation_id, temperature_value, temperature_unit, pending ,fom_data_id ,kind ,json, id)")
         self.con.commit()
         return {'message': 'reset complete'}
 
-
     def _add_chemical_forced(self, chemical: schemas_pydantic.Compound):
         id_ = uuid4().hex
-        rows = [(chemical.smiles, chemical.name, chemical.reference, id_)]
-        self.cur.executemany('insert into chemicals values (?,?,?,?)', rows)
+        json_ = chemical.json()
+        rows = [(chemical.smiles, chemical.name, chemical.reference, json_ ,id_)]
+        self.cur.executemany('insert into chemicals values (?,?,?,?,?)', rows)
         return id_
 
 
@@ -45,12 +43,21 @@ class dbinteraction:
         else:
             return rows_smiles
 
-
+    #deprecated
     def query_chemicals_by_id(self, id_):
         self.cur.execute("select * from chemicals where id=:id_query", {"id_query": id_})
         rows_smiles = self.cur.fetchall()
         return rows_smiles[0]
 
+    def query_by_id(self,table, id_):
+        self.cur.execute("select * from {} where id=:id_query".format(table), {"id_query": id_})
+        rows = self.cur.fetchall()
+        return rows[0]
+
+    def query_table(self,table):
+        self.cur.execute("select * from {}".format(table))
+        rows = self.cur.fetchall()
+        return rows
 
     def add_chemical(self, chemical: schemas_pydantic.Chemical):
         # we consider smiles to be unique
@@ -67,7 +74,7 @@ class dbinteraction:
         for i in range(len(rows_smiles)):
             if chemical.reference == rows_smiles[i][2]:
                 # this is an exact match though it might have a different name
-                id_ = rows_smiles[i][3]
+                id_ = rows_smiles[i][-1]
                 print('known smiles')
                 return id_
         if i == len(rows_smiles):
@@ -78,8 +85,18 @@ class dbinteraction:
         else:
             return {"message": "fail"}
 
-    def query_X_by_Y(self, X, Y, value):
+    def query_X_by_Y(self, X, Y, value,return_all=False):
         self.cur.execute("select * from {} where {}=:iquery".format(X,Y), {"iquery": value})
+        rows = self.cur.fetchall()#expect this to be unique and return id
+        if return_all:
+            return rows
+        if len(rows) > 0:
+            return rows[0][-1]
+        else:
+            return -1
+
+    def get_fom(self, id):
+        self.cur.execute("select * from measurements where id=:iquery", {"iquery": id_})
         rows = self.cur.fetchall()#expect this to be unique and return id
         if len(rows) > 0:
             return rows[0][-1]
@@ -113,7 +130,8 @@ class dbinteraction:
             amount_values.append('-1')
             amount_units.append('Mol')
         id_ = uuid4().hex
-        arr = [*chemical_ids,*amount_values,*amount_units,compound.name,id_]
+        json_ = compound.json()
+        arr = [*chemical_ids,*amount_values,*amount_units,compound.name,json_,id_]
         qstr = '('+','.join(['?' for i in range(len(arr))])+')'
         self.cur.execute("insert into compounds values {}".format(qstr),arr)
 
@@ -134,7 +152,8 @@ class dbinteraction:
             ratios.append(0)
 
         id_ = uuid4().hex
-        arr = [*compound_ids,*ratios,formulation.ratio_method,id_]
+        json_ = compound.json()
+        arr = [*compound_ids,*ratios,formulation.ratio_method,json_,id_]
         qstr = '('+','.join(['?' for i in range(len(arr))])+')'
         self.cur.execute("insert into formulations values {}".format(qstr),arr)
 
@@ -161,11 +180,29 @@ class dbinteraction:
         temperature_unit = measurement.temperature.unit# = Field(...)
         pending = measurement.pending
         kind = measurement.kind.origin.value
-        arr = [formulation_id,temperature_value,temperature_unit,pending,fom_id_,kind, id_]
+        json_ = measurement.json()
+        arr = [formulation_id,temperature_value,temperature_unit,pending,fom_id_,kind,json_, id_]
         qstr = '(' + ','.join(['?' for i in range(len(arr))]) + ')'
         self.cur.execute("insert into measurements values {}".format(qstr),arr)
 
         return id_
+
+    def query_measurement_by_id(self,id_):
+        self.cur.execute("select * from measurements where id=:iquery", {"iquery": id_})
+        row_meas = self.cur.fetchall()[0]  # expect this to be unique and return id
+
+        json_ = row_meas[-2]
+        measurement_deserialized = schemas_pydantic.Measurement.parse_raw(json_)
+        return measurement_deserialized
+
+
+    def query_formulation_by_id(self,id_):
+        self.cur.execute("select * from formulations where id=:iquery", {"iquery": id_})
+        row_meas = self.cur.fetchall()[0]  # expect this to be unique and return id
+
+        json_ = row_meas[-2]
+        measurement_deserialized = schemas_pydantic.Formulation.parse_raw(json_)
+        return measurement_deserialized
 
     def setup():
         if config.db_file==None:
