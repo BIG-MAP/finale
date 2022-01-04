@@ -55,8 +55,8 @@ def assembleXY(measurements,conversions: dict=None,fom_name = 'Density'):
                 if not chemical.smiles in amounts_.keys():
                     amounts_[chemical.smiles] = ratio[ci]*conversions[chemical.smiles]*chemical_amount.value
                 else:
-                    print(chemical.smiles + "\n")
-                    print(str(ratio[ci])+ ' '+ str(conversions[chemical.smiles])+ ' '+str(chemical_amount.value)+ "\n")
+                    #print(chemical.smiles + "\n")
+                    #print(str(ratio[ci])+ ' '+ str(conversions[chemical.smiles])+ ' '+str(chemical_amount.value)+ "\n")
                     amounts_[chemical.smiles] += ratio[ci]*conversions[chemical.smiles]*chemical_amount.value
         amounts_['unit'] = ratiomethod + '*' + conversions['unit'] + '*' + chemical_amount.unit
         if measurement.fom_data.name == fom_name:
@@ -75,4 +75,4 @@ def assembleXY(measurements,conversions: dict=None,fom_name = 'Density'):
         y.append(r)
         z.append(i)
 
-    return dict(X=X,y=y,z=z,amounts=amounts,results=results)
+    return dict(X=X,y=y,z=z,amounts=amounts,results=results,chemicals=X_keys)
