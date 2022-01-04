@@ -3,6 +3,7 @@ rootp = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.join(rootp, 'config'))
 sys.path.append(os.path.join(rootp, 'db'))
 from typing import List
+import numpy as np
 
 import config
 from db import schemas_pydantic
@@ -52,8 +53,10 @@ def assembleXY(measurements,conversions: dict=None,fom_name = 'Density'):
         for ci,compound in enumerate(measurement.formulation.compounds):
             for chemical_amount,chemical in zip(compound.amounts,compound.chemicals):
                 if not chemical.smiles in amounts_.keys():
-                    amounts_[chemical.smiles] = 0
+                    amounts_[chemical.smiles] = ratio[ci]*conversions[chemical.smiles]*chemical_amount.value
                 else:
+                    print(chemical.smiles + "\n")
+                    print(str(ratio[ci])+ ' '+ str(conversions[chemical.smiles])+ ' '+str(chemical_amount.value)+ "\n")
                     amounts_[chemical.smiles] += ratio[ci]*conversions[chemical.smiles]*chemical_amount.value
         amounts_['unit'] = ratiomethod + '*' + conversions['unit'] + '*' + chemical_amount.unit
         if measurement.fom_data.name == fom_name:
