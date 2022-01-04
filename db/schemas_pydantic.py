@@ -35,6 +35,7 @@ class Chemical(BaseModel):
     smiles: str# = Field(...)
     name: str# = Field(...)
     reference: str = ''
+    props = Optional[dict]
     # TODO: add smiles check?
     # TODO: add check if chemicals are allowed?
 
