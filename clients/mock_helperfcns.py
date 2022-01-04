@@ -24,3 +24,22 @@ def assembleXY(measurements: List[schemas_pydantic.Measurement],conversions: dic
     there is no checking of this hence it is you own best interest to do this.
     Example: if ratio_method is volumetric and amounts is in mol you need a molar volume conversion (mol/V)
     """
+
+    #we need to go through all measurements to get the complete chemicaldict
+    chemicaldict = dict()
+    for measurement in measurements:
+        ratio = measurement.formulation.ratio
+        #assemble a list of chemicals
+        compoundlist = measurement.formulation.compounds
+        for compound in compoundlist:
+            for chemical in compound.chemicals:
+                if not chemical.smiles in chemicaldict.keys():
+                    chemicaldict[chemical.smiles] = chemical
+
+    #unsafe: if we have no conversions we assume you have compound conversion ratios of 1
+    if conversions == None:
+        conversions = dict()
+        for k in chemicaldict:
+            conversions[k] = 1
+
+    #now we can figure out how much of what is where
