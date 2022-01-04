@@ -109,8 +109,8 @@ async def all_fom(fom_name: str):
     # go through all responses to make a
     mlist = {}
     for r in response:
+        print(r[-2])
         json_ = schemas_pydantic.Measurement.parse_raw(r[-2])
-        print(json_.fom_data)
         if not json_.fom_data == None:
             if json_.fom_data.name == fom_name:
                 mlist[r[-1]] = json_

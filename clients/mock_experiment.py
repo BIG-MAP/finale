@@ -19,9 +19,9 @@ while True:
                            params={'fom_name':'Density'}).json()
 
     #someone does an experiment
-    for request_id,request_meas in pending.items():
+    for request_id,request_meas_ in pending.items():
         #convert to proper measurement
-        request_meas = schemas_pydantic.Measurement(**request_meas)
+        request_meas = schemas_pydantic.Measurement(**request_meas_)
         #do a fancy experiment
         # replace the following line with your experiment for instance
         if request_meas.kind.origin == "experiment":

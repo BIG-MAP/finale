@@ -10,7 +10,7 @@ import requests
 import itertools as it
 from random import random
 
-tern = [tup for tup in it.product([i/10 for i in range(11)],repeat=3) if abs(sum(tup)-1)<1e-9]
+tern = [tup for tup in it.product([round(i/10,4) for i in range(11)],repeat=3) if abs(sum(tup)-1)<1e-9]
 val = [1.3/abs(t[0]-0.331)+1.5/abs(t[1]-0.331)+0.9/abs(t[2]-0.331) for t in tern]
 
 A = schemas_pydantic.Compound(chemicals=[

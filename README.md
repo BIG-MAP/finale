@@ -1,7 +1,5 @@
-# finale or fastALE?
+# finale
 _f_ast _in_tention _a_gnostic _l_earning _e_nvironment
-_f_ast API based _a_ctive _le_arning
-... your decision
 
 # todo 
 
