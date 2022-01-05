@@ -2,7 +2,7 @@ import os,sys
 rootp = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.join(rootp, 'config'))
 sys.path.append(os.path.join(rootp, 'clients'))
-
+# terminal run: rootp += "/fastALE/"
 import config
 from db import schemas_pydantic
 from mock_helperfcns import assembleXY
@@ -12,8 +12,9 @@ from sklearn.ensemble import RandomForestRegressor
 import composition
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+from scipy.optimize import minimize
 
-def simple_rf_optimizer(X_,y,sampling_dens=0.01,simplex=True,maximize=True,return_all=True):
+def simple_rf_optimizer(X_,y,sampling_dens=0.01,simplex=True,maximize=False,return_all=True):
     # RF are typically not used for geospatial data ... but this is faster than GP
     regr = RandomForestRegressor(n_estimators=50, random_state=1337)
 
@@ -55,31 +56,44 @@ def simple_rf_optimizer(X_,y,sampling_dens=0.01,simplex=True,maximize=True,retur
         rv = Xtry[i]
     return rv
 
+
 while True:
     #getting all FOM
     all_measurements = requests.get(f"http://{config.host}:{config.port}/api/broker/get/all_fom",
                                     params={'fom_name': 'Density'}).json()
-    #getting a XY style table
+    #get a XY style table
     measurements = {k:schemas_pydantic.Measurement(**m) for k,m in all_measurements.items()}
-    xyz = assembleXY(measurements, conversions = None, fom_name = 'Density')
+    xyz = assembleXY(measurements, conversions = config.densities, fom_name = 'Density')
     X,y = xyz['X'],xyz['y']
-    try_chem_ratios = simple_rf_optimizer(X,y)
 
-    for chem_ratio in try_chem_ratios:
-        ratio = calc_formulation_from_chemicals(chem_ratio)
-    #now we need to figure out if it is possibile to make this formulation
-    #given our compounds! (nah who though of this!?)
-    compounds = requests.get(f"http://{config.host}:{config.port}/api/broker/get/all_compounds").json()
-    compounds = [schemas_pydantic.Compound(**c) for c in compounds.values()]
-    #find out which chemicals we have
-    chemicals = dict()
-    for compound in compounds:
-        for chemical in compound.chemicals:
-            if not chemical.smiles in chemicals.keys():
-                chemicals[chemical.smiles] = chemical
-    smilesl = list(chemicals.keys())
-    premat = {c.name:{s:0 for s in smilesl} for c in compounds}
-    for compound in compounds:
-        for chemical,amount in zip(compound.chemicals,compound.amounts):
-            premat[compound.name][chemical.smiles] += amount.value
-    # with premat we can get a formulation or ratio that minimizes the difference
+    #ask the optimizer what to try
+    return_all = False
+    try_chem_ratios = simple_rf_optimizer(X,y,return_all=return_all)
+
+    #translate this result into a formulation
+    #warning: It may very well be possibile that the suggested chemical composition is not attainable
+    #with the used compounds compositions. Right now I oped to just go for the closest one. An alternative
+    #is to take the one with an error lower than the threshold...
+    if return_all:
+        errs = []
+        for chem_ratio in try_chem_ratios:
+            target = {chem_name:amnt for amnt,chem_name in zip(chem_ratio,xyz['chemicals'])}
+            ratios,err = get_formulation(target,conversions=config.densities)
+            errs.append(err)
+    else:
+        target = {chem_name: amnt for amnt, chem_name in zip(try_chem_ratios, xyz['chemicals'])}
+        ratios, err = get_formulation(target)
+        errs = [err]
+        print(f"Error of formulation: {err}")
+    #post the suggestion to the broker server
+    #arrange the compounds right
+    compounds = get_compounds()
+    ratios_arranged = [ratios[c] for c in [cn.name for cn in compounds]]
+
+    form_post = schemas_pydantic.Formulation(compounds=compounds, ratio=ratios_arranged, ratio_method='volumetric')
+    temp = schemas_pydantic.Temperature(value=298.15, unit='K')
+    orig = schemas_pydantic.Origin(origin='experiment', what='Density')
+    meas_request = schemas_pydantic.Measurement(formulation=form_post, temperature=temp, pending=True, kind=orig)
+    ans = requests.post(f"http://{config.host}:{config.port}/api/broker/request/measurement",
+                             data=meas_request.json()).json()
+    print(ans)

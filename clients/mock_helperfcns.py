@@ -16,6 +16,51 @@ def do_experiment(measurement: schemas_pydantic.Measurement):
 def do_simulation(measurement: schemas_pydantic.Measurement):
     pass
 
+
+def get_compounds():
+    compounds = requests.get(f"http://{config.host}:{config.port}/api/broker/get/all_compounds").json()
+    compounds = [schemas_pydantic.Compound(**c) for c in compounds.values()]
+    return compounds
+
+def get_formulation(chem_ratio,conversions: dict=None):
+    # now we need to figure out if it is possibile to make this formulation
+    # given our compounds! (nah who though of this!?)
+    compounds = get_compounds()
+    # find out which chemicals we have
+    chemicals = dict()
+    for compound in compounds:
+        for chemical in compound.chemicals:
+            if not chemical.smiles in chemicals.keys():
+                chemicals[chemical.smiles] = chemical
+    if conversions == None:
+        conversions = {n:1 for i,n in enumerate(chemicals.keys())}
+    smilesl = list(chemicals.keys())
+
+    #now we focus on the actual problem
+    premat = {c.name: {s: 0 for s in smilesl} for c in compounds}
+    for compound in compounds:
+        for chemical, amount in zip(compound.chemicals, compound.amounts):
+            premat[compound.name][chemical.smiles] += amount.value
+    # with premat we can get a formulation or ratio that minimizes the difference
+    target = chem_ratio#{chem_name: amnt for amnt, chem_name in zip(chem_ratio, xyz['chemicals'])}
+
+    order_chem = list(target.keys())
+    order_comp = list(premat.keys())
+    def mini(factors,target=target,premat=premat,conversions=conversions):
+        t = np.array([target[k] for k in order_chem])
+        c = np.array([conversions[k] for k in order_chem])
+        mat = c*np.array([[premat[k2][k] for k in order_chem] for k2 in order_comp])
+        fac_alr = composition.alr_inv(factors)
+        f = np.dot(fac_alr,mat)
+        return np.sum((f-t)**2)
+
+    res = minimize(mini,x0=[1 for i in range(len(premat.keys())-1)],method='L-BFGS-B')
+    ratio_ilr = res.x
+    ratio = composition.alr_inv(ratio_ilr)
+    if mini(ratio_ilr)>config.ratio_threshold:
+        print(f"Ratio error is: {mini(ratio_ilr)}")
+    return {compound:r for compound,r in zip(order_comp,ratio)},mini(ratio_ilr)
+
 def assembleXY(measurements,conversions: dict=None,fom_name = 'Density'):
     """
     This function will return a XY style dictionary with explanations. It is custom programmed as a helper
