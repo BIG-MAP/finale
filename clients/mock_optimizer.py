@@ -19,16 +19,9 @@ posted_id = "none_yet"
 
 while True:
     #check if we have new measurements
-    check_ = requests.get(f"http://{config.host}:{config.port}/api/broker/get/measurement",
-                                    params={'query_id': posted_id}).json()
-    #if we have not yet measured then this will throw an error
-    try:
-        check = schemas_pydantic.Measurement(**check_)
-        pending = check.pending
-    except:
-        pending = False
-
-    if not pending:
+    pending_measurements = requests.get(f"http://{config.host}:{config.port}/api/broker/get/pending",
+                           params={'fom_name':'Density'}).json()
+    if not posted_id in pending_measurements.keys():
         #getting all FOM
         all_measurements = requests.get(f"http://{config.host}:{config.port}/api/broker/get/all_fom",
                                         params={'fom_name': 'Density'}).json()

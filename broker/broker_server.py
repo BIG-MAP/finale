@@ -134,7 +134,6 @@ async def get_pending(fom_name: str):
             mlist[r[-1]] = json_
     return mlist
 
-
 @app.post("/api/broker/post/measurement")
 def post_measurement(measurement: schemas_pydantic.Measurement, request_id: str = None):
 

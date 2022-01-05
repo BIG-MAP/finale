@@ -3,7 +3,7 @@ rootp = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.join(rootp, 'config'))
 sys.path.append(os.path.join(rootp, 'db'))
 
-from config import config
+import config
 from db import schemas_pydantic
 from helperfcns import do_simulation
 import requests
