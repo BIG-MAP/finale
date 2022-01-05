@@ -5,7 +5,7 @@ sys.path.append(os.path.join(rootp, 'db'))
 
 from config import config
 from db import schemas_pydantic
-from mock_helperfcns import do_simulation
+from helperfcns import do_simulation
 import requests
 import time
 

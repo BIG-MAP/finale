@@ -2,7 +2,11 @@ import os,sys
 rootp = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.join(rootp, 'config'))
 sys.path.append(os.path.join(rootp, 'db'))
-from typing import List
+
+from sklearn.ensemble import RandomForestRegressor
+import composition
+from tqdm import tqdm
+from scipy.optimize import minimize
 import numpy as np
 
 import config
@@ -15,7 +19,6 @@ def do_experiment(measurement: schemas_pydantic.Measurement):
 
 def do_simulation(measurement: schemas_pydantic.Measurement):
     pass
-
 
 def get_compounds():
     compounds = requests.get(f"http://{config.host}:{config.port}/api/broker/get/all_compounds").json()
@@ -121,3 +124,45 @@ def assembleXY(measurements,conversions: dict=None,fom_name = 'Density'):
         z.append(i)
 
     return dict(X=X,y=y,z=z,amounts=amounts,results=results,chemicals=X_keys)
+
+def simple_rf_optimizer(X_,y,sampling_dens=0.01,simplex=True,maximize=False,return_all=True):
+    # RF are typically not used for geospatial data ... but this is faster than GP
+    regr = RandomForestRegressor(n_estimators=50, random_state=1337)
+
+    if simplex:
+        X = composition.ilr(X_+np.array([1e-10 for i in range(len(X_[0]))]))
+    else:
+        X = X_
+    if maximize:
+        pass
+    else:
+        y = -np.array(y)
+
+    regr.fit(X,y)
+
+    #gen test data
+    Xm,XM = np.min(X,axis=0),np.max(X,axis=0)
+    Xtry = np.array(np.meshgrid(*[np.linspace(m,M,40) for m,M in zip(Xm,XM)])).reshape(-1,len(Xm))
+    pred = regr.predict(Xtry)
+
+    y_var = np.zeros([50, len(pred)])
+    for j in tqdm(range(50)):
+        y_var[j, :] = regr.estimators_[j].predict(Xtry)
+    var = np.var(y_var, axis=0)
+    #my crazy aquisition function that scales for variance!
+    aqf = pred/np.var(pred) + var/np.var(var)
+    if return_all:
+        aqf_lvl = np.unique(aqf)
+        i = []
+        for lvl in np.sort(-aqf_lvl):
+            level_indices = np.where(aqf==-lvl)[0]
+            i.append(np.random.choice(level_indices))
+    else:
+        ix = np.where(aqf == np.max(aqf))[0]
+        i = np.random.choice(ix)
+
+    if simplex:
+        rv = composition.ilr_inv(Xtry[i])
+    else:
+        rv = Xtry[i]
+    return rv
