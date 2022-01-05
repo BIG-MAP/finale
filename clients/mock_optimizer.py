@@ -35,9 +35,12 @@ while True:
         #get a XY style table
         measurements = {k:schemas_pydantic.Measurement(**m) for k,m in all_measurements.items()}
         if filter_ingest == 'experiment':
-            measurements = {k:m for k,m in measurements.items() if not m.fom_data.origin.origin.value=='experiment'}
+            measurements = {k:m for k,m in measurements.items() if m.fom_data.origin.origin.value=='experiment'}
         if filter_ingest == 'simulation':
-            measurements = {k:m for k,m in measurements.items() if not m.fom_data.origin.origin.value=='simulation'}
+            measurements = {k:m for k,m in measurements.items() if m.fom_data.origin.origin.value=='simulation'}
+
+        if len(measurements.keys())==0:
+            break
 
         xyz = assembleXY(measurements, conversions = config.densities, fom_name = 'Density')
         X,y = xyz['X'],xyz['y']

@@ -9,6 +9,7 @@ from tqdm import tqdm
 from scipy.optimize import minimize
 import numpy as np
 
+import requests
 import config
 from db import schemas_pydantic
 

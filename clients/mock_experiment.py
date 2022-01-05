@@ -1,6 +1,6 @@
 import os,sys
 rootp = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-rootp += "/fastALE/"
+#rootp += "/fastALE/"
 sys.path.append(os.path.join(rootp, 'config'))
 sys.path.append(os.path.join(rootp, 'db'))
 sys.path.append(os.path.join(rootp, 'clients'))
