@@ -17,7 +17,7 @@ class Origin(BaseModel):
 class ok(BaseModel):
     typeob: str
 
-class FOMEnum(str, Enum):
+class FomEnum(str, Enum):
     density = 'density'
     viscosity = 'viscosity'
 
@@ -119,7 +119,7 @@ class FomData(BaseModel):
     """
     value: float = Field(...)
     unit: str = Field(...)
-    name: str = Field(...)
+    name: FomEnum = Field(...)#changed!
     origin: Origin = Field(...)
     measurement_id: str = Field(...)
 
