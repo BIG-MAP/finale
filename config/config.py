@@ -5,12 +5,12 @@ from db import schemas_pydantic
 
 #values
 reset: bool = True
-db_file: str = r'db/session_331.db'
+db_file: str = r'db/session_334.db'
 MAX_D = 7
 host = "localhost"
 port = 13371
 
-sleeptime = 5
+sleeptime = 0
 
 ratio_threshold = 0.01
 
