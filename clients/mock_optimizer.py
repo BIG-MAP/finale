@@ -15,7 +15,7 @@ import time
 filter_ingest = "experiment"
 request_type = "experiment"
 
-posted_id = "none_yet"
+posted_id = "no_posted_id_yet"
 
 while True:
     #check if we have new measurements
