@@ -15,16 +15,19 @@ from db import schemas_pydantic
 
 from random import random
 def do_experiment(measurement: schemas_pydantic.Measurement):
-
     return random()
 
+
 def do_simulation(measurement: schemas_pydantic.Measurement):
-    pass
+    return random()
+
+
 
 def get_compounds():
     compounds = requests.get(f"http://{config.host}:{config.port}/api/broker/get/all_compounds").json()
     compounds = [schemas_pydantic.Compound(**c) for c in compounds.values()]
     return compounds
+
 
 def get_formulation(chem_ratio,conversions: dict=None):
     # now we need to figure out if it is possibile to make this formulation
