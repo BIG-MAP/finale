@@ -46,4 +46,4 @@ while True:
                                  data=posted_meas.json(),params={'request_id':request_id}).json()
             print(f"Posted an experiment ... Response: {ans_}")
         else:
-            print("Pending simulation")
+            print("Pending a simulation ... nothing to do")
