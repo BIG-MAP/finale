@@ -11,7 +11,7 @@ import time
 
 while True:
     time.sleep(config.sleeptime)
-    print("Looking for things to do...")
+    print("Looking for simulations to do...")
     #asks what measurements are pending
     pending = requests.get(f"http://{config.host}:{config.port}/api/broker/get/pending",
                            params={'fom_name':'Density'}).json()
