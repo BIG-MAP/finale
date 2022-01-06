@@ -11,7 +11,7 @@ from uuid import UUID
 
 app = FastAPI(title="finale broker server",
               description="main server accepting requests and serving queries",
-              version="0.2")
+              version="0.9")
 
 
 @app.post("/api/broker/post/chemical")
