@@ -7,7 +7,7 @@ import config
 from db import schemas_pydantic
 import requests
 
-#initialize the pure compounds
+#initialize the pure compounds so nothing complains
 ids = []
 #LIPF6
 form = schemas_pydantic.Formulation(compounds=[config.lipf6], ratio=[1], ratio_method='volumetric')
