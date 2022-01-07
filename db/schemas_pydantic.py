@@ -18,8 +18,8 @@ class ok(BaseModel):
     typeob: str
 
 class FomEnum(str, Enum):
-    density = 'density'
-    viscosity = 'viscosity'
+    density = 'Density'
+    viscosity = 'Viscosity'
 
 class FOM(BaseModel):
     origin: OriginEnum
@@ -117,7 +117,7 @@ class FomData(BaseModel):
     Example:
         fom_1 = FomData(value=3,unit="g/cm**3",origin="experiment")
     """
-    value: float = Field(...)
+    value: float# = Field(...)
     unit: str = Field(...)
     name: FomEnum = Field(...)#changed!
     origin: Origin = Field(...)

@@ -10,6 +10,7 @@ import schemas_pydantic
 
 class dbinteraction:
     def __init__(self):
+        print(config.db_file)
         self.con = sqlite3.connect(config.db_file)
         self.cur = self.con.cursor()
 

@@ -5,7 +5,7 @@ from db import schemas_pydantic
 
 #values
 reset: bool = True
-db_file: str = r'db/session_334.db'
+db_file: str = r'session_336.db'
 MAX_D = 7
 host = "localhost"
 port = 13371
