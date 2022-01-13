@@ -1,0 +1,24 @@
+{
+  "compounds": [
+    {
+      "chemicals": [
+        {
+          "smiles": "COC(=O)OC",
+          "name": "DMC",
+          "reference": "DMC_Elyte_2020"
+        }
+      ],
+      "amounts": [
+        {
+          "value": 1.0,
+          "unit": "Mol"
+        }
+      ],
+      "name": "DMC"
+    }
+  ],
+  "ratio": [
+    1.0
+  ],
+  "ratio_method": "volumetric"
+}

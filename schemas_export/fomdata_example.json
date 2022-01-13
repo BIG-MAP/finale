@@ -1,0 +1,10 @@
+{
+  "value": 3.0,
+  "unit": "g/cm**3",
+  "name": "Density",
+  "origin": {
+    "origin": "simulation",
+    "what": "density"
+  },
+  "measurement_id": "fancy_density_simulation_12345678"
+}

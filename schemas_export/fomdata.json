@@ -1,0 +1,68 @@
+{
+  "title": "FomData",
+  "description": "This is a wrapper for figure of merit (FOM) i.e. scalar data\n\nExample:\n    fom_1 = FomData(value=3,unit=\"g/cm**3\",origin=\"experiment\")",
+  "type": "object",
+  "properties": {
+    "value": {
+      "title": "Value",
+      "type": "number"
+    },
+    "unit": {
+      "title": "Unit",
+      "type": "string"
+    },
+    "name": {
+      "$ref": "#/definitions/FomEnum"
+    },
+    "origin": {
+      "$ref": "#/definitions/Origin"
+    },
+    "measurement_id": {
+      "title": "Measurement Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "value",
+    "unit",
+    "name",
+    "origin",
+    "measurement_id"
+  ],
+  "definitions": {
+    "FomEnum": {
+      "title": "FomEnum",
+      "description": "An enumeration.",
+      "enum": [
+        "Density",
+        "Viscosity"
+      ],
+      "type": "string"
+    },
+    "OriginEnum": {
+      "title": "OriginEnum",
+      "description": "An enumeration.",
+      "enum": [
+        "experiment",
+        "simulation"
+      ],
+      "type": "string"
+    },
+    "Origin": {
+      "title": "Origin",
+      "type": "object",
+      "properties": {
+        "origin": {
+          "$ref": "#/definitions/OriginEnum"
+        },
+        "what": {
+          "title": "What",
+          "type": "string"
+        }
+      },
+      "required": [
+        "origin"
+      ]
+    }
+  }
+}
