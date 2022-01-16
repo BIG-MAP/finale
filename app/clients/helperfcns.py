@@ -4,14 +4,14 @@ sys.path.append(os.path.join(rootp, 'config'))
 sys.path.append(os.path.join(rootp, 'db'))
 
 from sklearn.ensemble import RandomForestRegressor
-import composition
+from app.clients import composition
 from tqdm import tqdm
 from scipy.optimize import minimize
 import numpy as np
 
 import requests
 import config
-from db import schemas_pydantic
+from app.db import schemas_pydantic
 
 from passlib.context import CryptContext
 
@@ -137,7 +137,7 @@ def simple_rf_optimizer(X_,y,sampling_dens=0.01,simplex=True,maximize=False,retu
     regr = RandomForestRegressor(n_estimators=50, random_state=1337)
 
     if simplex:
-        X = composition.ilr(X_+np.array([1e-10 for i in range(len(X_[0]))]))
+        X = composition.ilr(X_ + np.array([1e-10 for i in range(len(X_[0]))]))
     else:
         X = X_
     if maximize:

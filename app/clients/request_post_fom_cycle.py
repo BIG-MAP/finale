@@ -3,12 +3,11 @@ rootp = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.join(rootp, 'config'))
 sys.path.append(os.path.join(rootp, 'db'))
 
-from config import config
-from db import schemas_pydantic
+from app.config import config
+from app.db import schemas_pydantic
 import requests
 
 import itertools as it
-from random import random
 
 tern = [tup for tup in it.product([round(i/10,4) for i in range(11)],repeat=3) if abs(sum(tup)-1)<1e-9]
 val = [1.3/abs(t[0]-0.331)+1.5/abs(t[1]-0.331)+0.9/abs(t[2]-0.331) for t in tern]
@@ -35,7 +34,7 @@ id_meas = []
 for t,v in zip(tern,val):
     form_1 = schemas_pydantic.Formulation(compounds=[A, B, C], ratio=t, ratio_method='volumetric')
     temp_1 = schemas_pydantic.Temperature(value=380, unit='K')
-    orig_1 = schemas_pydantic.Origin(origin='experiment',what='Density')
+    orig_1 = schemas_pydantic.Origin(origin='experiment', what='Density')
     meas_2 = schemas_pydantic.Measurement(formulation=form_1, temperature=temp_1, pending=True, kind=orig_1)
     ans_ = requests.post(f"http://{config.host}:{config.port}/api/broker/request/measurement",
                          data=meas_2.json()).json()
@@ -53,10 +52,10 @@ for request_id,request_meas in pending.items():
     # replace the following line with your experiment for instance
     fom_value = request_meas.formulation.ratio[0]*3-0.2*request_meas.formulation.ratio[1]**2
     fom = schemas_pydantic.FomData(value=fom_value,
-                                     unit="g/cm**3",
-                                     origin=schemas_pydantic.Origin(origin='experiment'),
-                                     measurement_id='123',
-                                     name='Density')
+                                   unit="g/cm**3",
+                                   origin=schemas_pydantic.Origin(origin='experiment'),
+                                   measurement_id='123',
+                                   name='Density')
 
     #this adds the data without much hassle but with type checking
 
@@ -66,7 +65,7 @@ for request_id,request_meas in pending.items():
                                                fom_data=fom,
                                                kind=schemas_pydantic.Origin(origin='experiment'))
     ans_ = requests.post(f"http://{config.host}:{config.port}/api/broker/post/measurement",
-                         data=posted_meas.json(),params={'request_id':request_id}).json()
+                         data=posted_meas.json(), params={'request_id':request_id}).json()
 
 #anything still pending?
 pending = requests.get(f"http://{config.host}:{config.port}/api/broker/get/pending",

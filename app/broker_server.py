@@ -1,7 +1,9 @@
 import os,sys
-rootp = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-sys.path.append(os.path.join(rootp, 'config'))
-sys.path.append(os.path.join(rootp, 'db'))
+#rootp = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+#sys.path.append(os.path.join(rootp, 'config'))
+#sys.path.append(os.path.join(rootp, 'db'))
+sys.path.append('/code/./app/config')
+sys.path.append('/code/./app/db')
 
 #ssl certificates make nothing but problems ...
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
@@ -293,6 +295,14 @@ def release():
 
     return {"message": "The broker server has been shutdown. Goodbye.", "id": -1}
 
+@app.on_event("startup")
+def release():
+    """
+    The broker server has been shutdown. Goodbye.
+    """
+    db_ = db.dbinteraction()
+    db_.reset()
+    return {"message": "The broker server has been shutdown. Goodbye.", "id": -1}
 
 if __name__ == "__main__":
     db_ = db.dbinteraction()

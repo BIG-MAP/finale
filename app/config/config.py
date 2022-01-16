@@ -1,8 +1,8 @@
 import os,sys
 rootp = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.join(rootp, 'db'))
-from db import schemas_pydantic
-from random import random
+from app.db import schemas_pydantic
+
 #values
 reset: bool = True
 db_file: str = f'session_a.db'

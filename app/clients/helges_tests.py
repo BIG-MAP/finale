@@ -1,6 +1,5 @@
-from config import config
-from db import schemas_pydantic
-
+from app.config import config
+from app.db import schemas_pydantic
 
 db_ = db.dbinteraction()
 #db_.reset()
@@ -17,38 +16,41 @@ chem_list = [
 ]
 
 def make_chemicals(c):
-    return schemas_pydantic.Chemical(name=c[1],smiles=c[0],reference=c[2])
+    return schemas_pydantic.Chemical(name=c[1], smiles=c[0], reference=c[2])
 
 chem_ids = []
 for c in chem_list:
     chem_ids.append(db_.add_chemical(make_chemicals(c)))
 
-A = schemas_pydantic.Compound(chemicals=[schemas_pydantic.Chemical(smiles='COC(=O)OC',name='DMC',reference='DMC_Elyte_2020'),
-                                  schemas_pydantic.Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F',name='LiPF6',reference='LiPF6_Elyte_2020')],
-                       amounts=[schemas_pydantic.Amount(value=0.5,unit='mol'),schemas_pydantic.Amount(value=0.1,unit='mol')],
-                       name='LiPF6_salt_in_DMC_5:1')
+A = schemas_pydantic.Compound(chemicals=[
+    schemas_pydantic.Chemical(smiles='COC(=O)OC', name='DMC', reference='DMC_Elyte_2020'),
+    schemas_pydantic.Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F', name='LiPF6', reference='LiPF6_Elyte_2020')],
+                              amounts=[schemas_pydantic.Amount(value=0.5, unit='mol'),
+                                       schemas_pydantic.Amount(value=0.1, unit='mol')],
+                              name='LiPF6_salt_in_DMC_5:1')
 
 id_comp1 = db_.add_compound(A)
 id_comp2 = db_.add_compound(A)
 
 
-B = schemas_pydantic.Compound(chemicals=[schemas_pydantic.Chemical(smiles='CC1COC(=O)O1', name='PC', reference='PC_ELyte_2020'),
-                        schemas_pydantic.Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F', name='LiPF6', reference='LiPF6_Elyte_2020')],
-             amounts=[schemas_pydantic.Amount(value=0.5, unit='mol'), schemas_pydantic.Amount(value=0.1, unit='mol')],
-             name='LiPF6_salt_in_PC_5:1')
+B = schemas_pydantic.Compound(chemicals=[
+    schemas_pydantic.Chemical(smiles='CC1COC(=O)O1', name='PC', reference='PC_ELyte_2020'),
+    schemas_pydantic.Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F', name='LiPF6', reference='LiPF6_Elyte_2020')],
+                              amounts=[schemas_pydantic.Amount(value=0.5, unit='mol'), schemas_pydantic.Amount(value=0.1, unit='mol')],
+                              name='LiPF6_salt_in_PC_5:1')
 
 form_1 = schemas_pydantic.Formulation(compounds=[A, B], ratio=[3, 1], ratio_method='volumetric')
 
 id_form1 = db_.add_formulation(form_1)
-temp_1 = schemas_pydantic.Temperature(value=380,unit='K')
+temp_1 = schemas_pydantic.Temperature(value=380, unit='K')
 orig_1 = schemas_pydantic.Origin(origin='experiment')
 meas_1 = schemas_pydantic.Measurement(formulation=form_1, temperature=temp_1, pending=True, kind=orig_1)
 
 id_form1 = db_.add_measurement(meas_1)
 
-fom_1 = schemas_pydantic.FomData(value=3,unit="g/cm**3",origin=orig_1,measurement_id='123',name='Density')
+fom_1 = schemas_pydantic.FomData(value=3, unit="g/cm**3", origin=orig_1, measurement_id='123', name='Density')
 
-meas_2 = schemas_pydantic.Measurement(formulation=form_1, temperature=temp_1, pending=True, kind=orig_1,fom_data=fom_1)
+meas_2 = schemas_pydantic.Measurement(formulation=form_1, temperature=temp_1, pending=True, kind=orig_1, fom_data=fom_1)
 
 id_form1 = db_.add_measurement(meas_2)
 
@@ -58,26 +60,30 @@ import itertools as it
 tern = [tup for tup in it.product([i/10 for i in range(11)],repeat=3) if sum(tup)==1]
 val = [1.3/abs(t[0]-0.33)+1.5/abs(t[1]-0.33)+0.9/abs(t[2]-0.33) for t in tern]
 
-A = schemas_pydantic.Compound(chemicals=[schemas_pydantic.Chemical(smiles='COC(=O)OC',name='DMC',reference='DMC_Elyte_2020'),
-                                  schemas_pydantic.Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F',name='LiPF6',reference='LiPF6_Elyte_2020')],
-                       amounts=[schemas_pydantic.Amount(value=0.5,unit='mol'),schemas_pydantic.Amount(value=0.1,unit='mol')],
-                       name='LiPF6_salt_in_DMC_5:1')
-B = schemas_pydantic.Compound(chemicals=[schemas_pydantic.Chemical(smiles='CC1COC(=O)O1', name='PC', reference='PC_ELyte_2020'),
-                        schemas_pydantic.Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F', name='LiPF6', reference='LiPF6_Elyte_2020')],
-             amounts=[schemas_pydantic.Amount(value=0.5, unit='mol'), schemas_pydantic.Amount(value=0.1, unit='mol')],
-             name='LiPF6_salt_in_PC_5:1')
-C = schemas_pydantic.Compound(chemicals=[schemas_pydantic.Chemical(smiles='CCOC(=O)OC', name='EMC', reference='EMC_ELyte_2020'),
-                        schemas_pydantic.Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F', name='LiPF6', reference='LiPF6_Elyte_2020')],
-             amounts=[schemas_pydantic.Amount(value=0.5, unit='mol'), schemas_pydantic.Amount(value=0.1, unit='mol')],
-             name='LiPF6_salt_in_EMC_5:1')
+A = schemas_pydantic.Compound(chemicals=[
+    schemas_pydantic.Chemical(smiles='COC(=O)OC', name='DMC', reference='DMC_Elyte_2020'),
+    schemas_pydantic.Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F', name='LiPF6', reference='LiPF6_Elyte_2020')],
+                              amounts=[schemas_pydantic.Amount(value=0.5, unit='mol'),
+                                       schemas_pydantic.Amount(value=0.1, unit='mol')],
+                              name='LiPF6_salt_in_DMC_5:1')
+B = schemas_pydantic.Compound(chemicals=[
+    schemas_pydantic.Chemical(smiles='CC1COC(=O)O1', name='PC', reference='PC_ELyte_2020'),
+    schemas_pydantic.Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F', name='LiPF6', reference='LiPF6_Elyte_2020')],
+                              amounts=[schemas_pydantic.Amount(value=0.5, unit='mol'), schemas_pydantic.Amount(value=0.1, unit='mol')],
+                              name='LiPF6_salt_in_PC_5:1')
+C = schemas_pydantic.Compound(chemicals=[
+    schemas_pydantic.Chemical(smiles='CCOC(=O)OC', name='EMC', reference='EMC_ELyte_2020'),
+    schemas_pydantic.Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F', name='LiPF6', reference='LiPF6_Elyte_2020')],
+                              amounts=[schemas_pydantic.Amount(value=0.5, unit='mol'), schemas_pydantic.Amount(value=0.1, unit='mol')],
+                              name='LiPF6_salt_in_EMC_5:1')
 
 id_meas = []
 for t,v in zip(tern,val):
     form_1 = schemas_pydantic.Formulation(compounds=[A, B, C], ratio=t, ratio_method='volumetric')
-    temp_1 = schemas_pydantic.Temperature(value=380,unit='K')
+    temp_1 = schemas_pydantic.Temperature(value=380, unit='K')
     orig_1 = schemas_pydantic.Origin(origin='experiment')
     fom_1 = schemas_pydantic.FomData(value=v, unit="g/cm**3", origin=orig_1, measurement_id='123', name='Density')
-    meas_2 = schemas_pydantic.Measurement(formulation=form_1, temperature=temp_1, pending=False, kind=orig_1,fom_data=fom_1)
+    meas_2 = schemas_pydantic.Measurement(formulation=form_1, temperature=temp_1, pending=False, kind=orig_1, fom_data=fom_1)
     id_meas.append(db_.add_measurement(meas_2))
 
 
@@ -229,7 +235,7 @@ pending = requests.get(f"http://{config.host}:{config.port}/api/broker/get/pendi
 
 
 response = requests.post(f"http://{config.host}:{config.port}/token", data={"username": "helge", "password": "1234", "grant_type": "password"},
-                           headers={"content-type": "application/x-www-form-urlencoded"})
+                         headers={"content-type": "application/x-www-form-urlencoded"})
 
 
 ###############
@@ -267,7 +273,7 @@ meas_2 = schemas_pydantic.Measurement(formulation=form_1, temperature=temp_1, pe
 
 def authenticate(user,pw):
     token_response = requests.post(f"http://{config.host}:{config.port}/token", data={"username": "helge", "password": "1234", "grant_type": "password"},
-                               headers={"content-type": "application/x-www-form-urlencoded"})
+                                   headers={"content-type": "application/x-www-form-urlencoded"})
 
     token_response = token_response.json()
     token = token_response['access_token']
@@ -277,4 +283,4 @@ def authenticate(user,pw):
     return auth_header
 
 ans2 = requests.post(f"http://{config.host}:{config.port}/api/broker/request/measurement",
-                         data=meas_2.json(), headers=auth_header).json()
+                     data=meas_2.json(), headers=auth_header).json()

@@ -4,8 +4,8 @@ sys.path.append(os.path.join(rootp, 'config'))
 sys.path.append(os.path.join(rootp, 'db'))
 
 import config
-from db import schemas_pydantic
-from helperfcns import do_experiment,authenticate
+from app.db import schemas_pydantic
+from helperfcns import authenticate
 import requests
 import time
 
@@ -30,10 +30,10 @@ while True:
             fom_value = do_simulation(request_meas)
 
             fom = schemas_pydantic.FomData(value=fom_value,
-                                             unit="g/cm**3",
-                                             origin=schemas_pydantic.Origin(origin='experiment'),
-                                             measurement_id='123',
-                                             name='Density')
+                                           unit="g/cm**3",
+                                           origin=schemas_pydantic.Origin(origin='experiment'),
+                                           measurement_id='123',
+                                           name='Density')
 
             #this adds the data without much hassle but with type checking
 

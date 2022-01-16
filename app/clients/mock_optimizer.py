@@ -1,5 +1,4 @@
 import os,sys
-import time
 
 rootp = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 #rootp += "/fastALE/"
@@ -8,7 +7,6 @@ sys.path.append(os.path.join(rootp, 'config'))
 sys.path.append(os.path.join(rootp, 'clients'))
 # terminal run: rootp += "/fastALE/"
 import config
-from db import schemas_pydantic
 from helperfcns import *
 import requests
 import time
@@ -28,7 +26,7 @@ while True:
         all_measurements = requests.get(f"http://{config.host}:{config.port}/api/broker/get/all_fom",
                                         params={'fom_name': 'Density'},headers=auth_header).json()
         #get a XY style table
-        measurements = {k:schemas_pydantic.Measurement(**m) for k,m in all_measurements.items()}
+        measurements = {k: schemas_pydantic.Measurement(**m) for k, m in all_measurements.items()}
         if filter_ingest == 'experiment':
             measurements = {k:m for k,m in measurements.items() if m.fom_data.origin.origin.value=='experiment'}
         if filter_ingest == 'simulation':
