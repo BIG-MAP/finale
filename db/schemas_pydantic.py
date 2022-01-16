@@ -1,28 +1,53 @@
-from typing import List,Optional
+from typing import List, Optional
 from pydantic import BaseModel, validator, Field
 from enum import Enum
+
+class User(BaseModel):
+    username: str
+    email: Optional[str] = None
+    full_name: Optional[str] = None
+    level: Optional[int] = 0
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    username: Optional[str] = None
+
+
+class UserInDB(User):
+    hashed_password: str
+
 
 class Message(BaseModel):
     message: str
     id: int
 
+
 class OriginEnum(str, Enum):
     experiment = 'experiment'
     simulation = 'simulation'
+
 
 class Origin(BaseModel):
     origin: OriginEnum
     what: Optional[str]
 
+
 class ok(BaseModel):
     typeob: str
+
 
 class FomEnum(str, Enum):
     density = 'Density'
     viscosity = 'Viscosity'
 
+
 class FOM(BaseModel):
     origin: OriginEnum
+
 
 class Chemical(BaseModel):
     """This defines a chemical
@@ -32,19 +57,20 @@ class Chemical(BaseModel):
     Example:
         Chemical(smiles='COC(=O)OC',name='DMC',reference='DMC_Elyte_2020')
     """
-    smiles: str# = Field(...)
-    name: str# = Field(...)
+    smiles: str  # = Field(...)
+    name: str  # = Field(...)
     reference: str = ''
     # TODO: add smiles check?
     # TODO: add check if chemicals are allowed?
+
 
 class Temperature(BaseModel):
     """Temperature in Kelvin
     Example:
         Temperature(value=380,unit='K')
     """
-    value: float# = Field(...)
-    unit: str# = Field(...)
+    value: float  # = Field(...)
+    unit: str  # = Field(...)
 
     @validator('value')
     def t_value_validator(cls, v):
@@ -58,6 +84,7 @@ class Temperature(BaseModel):
             raise ValueError('Temperature unit must be K')
         return v.title()
 
+
 class Amount(BaseModel):
     """We store amount in units of mole TODO: Maybe recalc to mol?
 
@@ -65,14 +92,15 @@ class Amount(BaseModel):
     Currently we only do mol
     Example: Amount(value=0.001,unit='mol')
     """
-    value: float# = Field(...)
-    unit: str# = Field(...)
+    value: float  # = Field(...)
+    unit: str  # = Field(...)
 
     @validator('unit')
     def amount_unit_validator(cls, v):
-        if not v in ['mol','Mol']:
+        if not v in ['mol', 'Mol']:
             raise ValueError('Unit must be mol')
         return v.title()
+
 
 class Compound(BaseModel):
     """Formulations are lists of Compound which are lists of chemicals
@@ -87,8 +115,9 @@ class Compound(BaseModel):
     """
     chemicals: List[Chemical] = Field(...)  # can be a list of len>=1
     amounts: List[Amount] = Field(...)
-    name: str# = Field(...)
+    name: str  # = Field(...)
     # TODO: Validate that len matches
+
 
 class Formulation(BaseModel):
     """A Formulation is a ratio mix of different compounds
@@ -111,17 +140,19 @@ class Formulation(BaseModel):
     # TODO: Validate that len matches
     # TODO: Tinker about ratios and ambiguities
 
+
 class FomData(BaseModel):
     """This is a wrapper for figure of merit (FOM) i.e. scalar data
 
     Example:
         fom_1 = FomData(value=3,unit="g/cm**3",origin="experiment")
     """
-    value: float# = Field(...)
+    value: float  # = Field(...)
     unit: str = Field(...)
-    name: FomEnum = Field(...)#changed!
+    name: FomEnum = Field(...)  # changed!
     origin: Origin = Field(...)
     measurement_id: str = Field(...)
+
 
 class Measurement(BaseModel):
     """A Measurement is done on a Formulation and contains data
@@ -144,13 +175,14 @@ class Measurement(BaseModel):
     meas_1 = Measurement(formulation=form_1, temperature=temp_1,pending=True,fom_data=fom_1,kind='experiment')
 
     """
-    #ID: UUID = Field(default_factory=uuid4)
-    formulation: Formulation# = Field(...)
-    temperature: Temperature# = Field(...)
-    pending: bool# = True
-    fom_data: Optional[FomData]# = []
+    # ID: UUID = Field(default_factory=uuid4)
+    formulation: Formulation  # = Field(...)
+    temperature: Temperature  # = Field(...)
+    pending: bool  # = True
+    fom_data: Optional[FomData]  # = []
     kind: Origin
     # TODO: if pending True raw and fom may not be set!
+
 
 class Message(BaseModel):
     message: dict = None

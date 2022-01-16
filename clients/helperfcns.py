@@ -13,6 +13,9 @@ import requests
 import config
 from db import schemas_pydantic
 
+from passlib.context import CryptContext
+
+
 from random import random
 def do_experiment(measurement: schemas_pydantic.Measurement):
     return random()
@@ -23,16 +26,16 @@ def do_simulation(measurement: schemas_pydantic.Measurement):
 
 
 
-def get_compounds():
-    compounds = requests.get(f"http://{config.host}:{config.port}/api/broker/get/all_compounds").json()
+def get_compounds(auth_header):
+    compounds = requests.get(f"http://{config.host}:{config.port}/api/broker/get/all_compounds",headers=auth_header).json()
     compounds = [schemas_pydantic.Compound(**c) for c in compounds.values()]
     return compounds
 
 
-def get_formulation(chem_ratio,conversions: dict=None):
+def get_formulation(chem_ratio,auth_header,conversions: dict=None):
     # now we need to figure out if it is possibile to make this formulation
     # given our compounds! (nah who though of this!?)
-    compounds = get_compounds()
+    compounds = get_compounds(auth_header)
     # find out which chemicals we have
     chemicals = dict()
     for compound in compounds:
@@ -170,3 +173,20 @@ def simple_rf_optimizer(X_,y,sampling_dens=0.01,simplex=True,maximize=False,retu
     else:
         rv = Xtry[i]
     return rv
+
+
+def authenticate(user, pw):
+    token_response = requests.post(f"http://{config.host}:{config.port}/token",
+                                   data={"username": "helge", "password": "1234", "grant_type": "password"},
+                                   headers={"content-type": "application/x-www-form-urlencoded"})
+
+    token_response = token_response.json()
+    token = token_response['access_token']
+
+    auth_header = {'Authorization': 'Bearer {}'.format(token)}
+
+    return auth_header
+
+def hashpw(pw):
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    return pwd_context.hash(pw)

@@ -3,10 +3,25 @@ rootp = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.join(rootp, 'config'))
 sys.path.append(os.path.join(rootp, 'db'))
 
+#ssl certificates make nothing but problems ...
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
+
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends,HTTPException, status
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+
 import config, db, schemas_pydantic
+from users import users_db
+
 from uuid import UUID
+from datetime import datetime, timedelta
+from passlib.context import CryptContext
+from jose import JWTError, jwt
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 app = FastAPI(title="finale broker server",
@@ -14,8 +29,94 @@ app = FastAPI(title="finale broker server",
               version="0.9")
 
 
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
+
+def get_user(db, username: str):
+    if username in db:
+        user_dict = db[username]
+        return schemas_pydantic.UserInDB(**user_dict)
+
+
+def authenticate_user(fake_db, username: str, password: str):
+    user = get_user(fake_db, username)
+    if not user:
+        return False
+    if not verify_password(password, user.hashed_password):
+        return False
+    return user
+
+
+def create_access_token(data: dict, expires_delta: timedelta | None = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, config.SECRET_KEY, algorithm=config.ALGORITHM)
+    return encoded_jwt
+
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, config.SECRET_KEY, algorithms=[config.ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+        token_data = TokenData(username=username)
+    except JWTError:
+        raise credentials_exception
+    user = get_user(users_db, username=token_data.username)
+    if user is None:
+        raise credentials_exception
+    return user
+
+
+async def get_current_active_user(current_user: schemas_pydantic.User = Depends(get_current_user)):
+    if current_user.disabled:
+        raise HTTPException(status_code=400, detail="Inactive user")
+    return current_user
+
+
+@app.post("/token", response_model=schemas_pydantic.Token)
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = authenticate_user(users_db, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=config.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.username}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
+@app.get("/users/me/", response_model=schemas_pydantic.User)
+async def read_users_me(current_user: schemas_pydantic.User = Depends(get_current_active_user)):
+    return current_user
+
+
+@app.get("/users/me/items/")
+async def read_own_items(current_user: schemas_pydantic.User = Depends(get_current_active_user)):
+    return [{"item_id": "Foo", "owner": current_user.username}]
+
+
 @app.post("/api/broker/post/chemical")
-def post_chemical(chemical: schemas_pydantic.Chemical):
+def post_chemical(chemical: schemas_pydantic.Chemical,token: str = Depends(oauth2_scheme)):
     """
     Experimentalists or theorists may post chemicals they can work with
     :param chemical: A Chemical object that contains the name smiles and reference
@@ -31,7 +132,7 @@ def post_chemical(chemical: schemas_pydantic.Chemical):
 
 
 @app.post("/api/broker/post/compound")
-def post_compound(compound: schemas_pydantic.Compound):
+def post_compound(compound: schemas_pydantic.Compound,token: str = Depends(oauth2_scheme)):
     """
     Experimentalists may post compounds in the setup
 
@@ -47,7 +148,7 @@ def post_compound(compound: schemas_pydantic.Compound):
     return {"message": "recieved Compound", "id": id_}
 
 @app.get("/api/broker/get/all_chemicals")
-def get_all_chemicals():
+def get_all_chemicals(token: str = Depends(oauth2_scheme)):
     """
     TODO: Returns you a list of all compounds
     """
@@ -64,7 +165,7 @@ def get_all_chemicals():
 
 
 @app.get("/api/broker/get/all_compounds")
-def get_all_compounds():
+def get_all_compounds(token: str = Depends(oauth2_scheme)):
     """
     Returns you a list of all compounds
     """
@@ -81,7 +182,7 @@ def get_all_compounds():
 
 
 @app.get("/api/broker/get/measurement")
-def get_measurement_by_id(query_id: str):
+def get_measurement_by_id(query_id: str,token: str = Depends(oauth2_scheme)):
     """
     This returns a measurement given a valid ID
     """
@@ -100,7 +201,7 @@ def get_measurement_by_id(query_id: str):
 #        return {"message": "other error", "id": query_id}
 
 @app.get("/api/broker/get/all_fom")
-async def all_fom(fom_name: str):
+async def all_fom(fom_name: str,token: str = Depends(oauth2_scheme)):
     # get all the measurement ids where pending is false
     db_ = db.dbinteraction()
     response = db_.query_X_by_Y('measurements', 'pending', False, return_all=True)
@@ -118,7 +219,7 @@ async def all_fom(fom_name: str):
 
 
 @app.get("/api/broker/get/pending")
-async def get_pending(fom_name: str):
+async def get_pending(fom_name: str,token: str = Depends(oauth2_scheme)):
     # get all the measurement ids where pending is false
     db_ = db.dbinteraction()
     response = db_.query_X_by_Y('measurements', 'pending', True, return_all=True)
@@ -135,7 +236,7 @@ async def get_pending(fom_name: str):
     return mlist
 
 @app.post("/api/broker/post/measurement")
-def post_measurement(measurement: schemas_pydantic.Measurement, request_id: str = None):
+def post_measurement(measurement: schemas_pydantic.Measurement, request_id: str = None,token: str = Depends(oauth2_scheme)):
 
     # check if not pending
     if measurement.pending:
@@ -167,7 +268,7 @@ def post_measurement(measurement: schemas_pydantic.Measurement, request_id: str 
 
 
 @app.post("/api/broker/request/measurement")
-def request_meas(measurement: schemas_pydantic.Measurement):
+def request_meas(measurement: schemas_pydantic.Measurement, token: str = Depends(oauth2_scheme)):
     # check if really pending
     if not measurement.pending:
         return {"message": "posted measurement as request that is not pending", "id": -1}
@@ -189,10 +290,14 @@ def release():
     """
     The broker server has been shutdown. Goodbye.
     """
+
     return {"message": "The broker server has been shutdown. Goodbye.", "id": -1}
 
 
 if __name__ == "__main__":
     db_ = db.dbinteraction()
     db_.reset()
-    uvicorn.run(app, host=config.host, port=config.port)
+    uvicorn.run("broker_server:app", host=config.host, port=config.port,
+                ssl_keyfile="../localhost+2-key.pem",
+                ssl_certfile="../localhost+2.pem")
+

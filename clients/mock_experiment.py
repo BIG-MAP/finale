@@ -4,19 +4,24 @@ rootp = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.join(rootp, 'config'))
 sys.path.append(os.path.join(rootp, 'db'))
 sys.path.append(os.path.join(rootp, 'clients'))
+
 print(rootp)
+
 import config
 from db import schemas_pydantic
-from helperfcns import do_experiment
+from helperfcns import do_experiment,authenticate
 import requests
 import time
 
 while True:
     time.sleep(config.sleeptime)
+    print("Logging in...")
+    auth_header = authenticate("helge", "1234")
+
     print("Looking for things to do...")
     #someone then asks what measurements are pending
     pending = requests.get(f"http://{config.host}:{config.port}/api/broker/get/pending",
-                           params={'fom_name':'Density'}).json()
+                           params={'fom_name':'Density'},headers=auth_header).json()
 
     #someone does an experiment
     for request_id,request_meas_ in pending.items():
@@ -43,7 +48,7 @@ while True:
                                                        kind=schemas_pydantic.Origin(origin='experiment'))
 
             ans_ = requests.post(f"http://{config.host}:{config.port}/api/broker/post/measurement",
-                                 data=posted_meas.json(),params={'request_id':request_id}).json()
+                                 data=posted_meas.json(),params={'request_id':request_id},headers=auth_header).json()
             print(f"Posted an experiment ... Response: {ans_}")
         else:
             print("Pending a simulation ... nothing to do")

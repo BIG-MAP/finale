@@ -2,15 +2,19 @@ import os,sys
 rootp = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.join(rootp, 'db'))
 from db import schemas_pydantic
-
+from random import random
 #values
 reset: bool = True
-db_file: str = r'session_336.db'
+db_file: str = f'session_a.db'
 MAX_D = 7
 host = "localhost"
 port = 13371
 
-sleeptime = 0
+SECRET_KEY = "dcf832f0ec6a80dc36afd95422f0bb1f1c964d916a8c0d29b127d3246e4c88a6"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 60*24*7
+
+sleeptime = 5
 
 ratio_threshold = 0.01
 

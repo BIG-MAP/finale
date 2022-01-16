@@ -203,7 +203,6 @@ class dbinteraction:
     def query_measurement_by_id(self,id_):
         self.cur.execute("select * from measurements where id=:iquery", {"iquery": id_})
         row_meas = self.cur.fetchall()[0]  # expect this to be unique and return id
-
         json_ = row_meas[-2]
         measurement_deserialized = schemas_pydantic.Measurement.parse_raw(json_)
         return measurement_deserialized

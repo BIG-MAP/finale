@@ -226,3 +226,55 @@ id_meas.append(ans_)
 #get those pending requests
 pending = requests.get(f"http://{config.host}:{config.port}/api/broker/get/pending",
                        params={'fom_name':'Density'}).json()
+
+
+response = requests.post(f"http://{config.host}:{config.port}/token", data={"username": "helge", "password": "1234", "grant_type": "password"},
+                           headers={"content-type": "application/x-www-form-urlencoded"})
+
+
+###############
+###############
+###############
+
+import requests
+from config import config
+from db import schemas_pydantic
+import os
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
+
+A = schemas_pydantic.Compound(chemicals=[
+    schemas_pydantic.Chemical(smiles='COC(=O)OC', name='DMC', reference='DMC_Elyte_2020'),
+    schemas_pydantic.Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F', name='LiPF6', reference='LiPF6_Elyte_2020')],
+                              amounts=[schemas_pydantic.Amount(value=0.5, unit='mol'),
+                                       schemas_pydantic.Amount(value=0.1, unit='mol')],
+                              name='LiPF6_salt_in_DMC_5:1')
+B = schemas_pydantic.Compound(chemicals=[
+    schemas_pydantic.Chemical(smiles='CC1COC(=O)O1', name='PC', reference='PC_ELyte_2020'),
+    schemas_pydantic.Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F', name='LiPF6', reference='LiPF6_Elyte_2020')],
+                              amounts=[schemas_pydantic.Amount(value=0.5, unit='mol'), schemas_pydantic.Amount(value=0.1, unit='mol')],
+                              name='LiPF6_salt_in_PC_5:1')
+C = schemas_pydantic.Compound(chemicals=[
+    schemas_pydantic.Chemical(smiles='CCOC(=O)OC', name='EMC', reference='EMC_ELyte_2020'),
+    schemas_pydantic.Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F', name='LiPF6', reference='LiPF6_Elyte_2020')],
+                              amounts=[schemas_pydantic.Amount(value=0.5, unit='mol'), schemas_pydantic.Amount(value=0.1, unit='mol')],
+                              name='LiPF6_salt_in_EMC_5:1')
+
+orig_1 = schemas_pydantic.Origin(origin='experiment', what='Density')
+form_1 = schemas_pydantic.Formulation(compounds=[A, B, C], ratio=(0.3, 0.6, 0.1), ratio_method='volumetric')
+temp_1 = schemas_pydantic.Temperature(value=380, unit='K')
+meas_2 = schemas_pydantic.Measurement(formulation=form_1, temperature=temp_1, pending=True, kind=orig_1)
+
+def authenticate(user,pw):
+    token_response = requests.post(f"http://{config.host}:{config.port}/token", data={"username": "helge", "password": "1234", "grant_type": "password"},
+                               headers={"content-type": "application/x-www-form-urlencoded"})
+
+    token_response = token_response.json()
+    token = token_response['access_token']
+
+    auth_header = {'Authorization': 'Bearer {}'.format(token)}
+
+    return auth_header
+
+ans2 = requests.post(f"http://{config.host}:{config.port}/api/broker/request/measurement",
+                         data=meas_2.json(), headers=auth_header).json()

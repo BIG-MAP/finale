@@ -18,13 +18,15 @@ request_type = "experiment"
 posted_id = "no_posted_id_yet"
 
 while True:
+    auth_header = authenticate("helge", "1234")
+
     #check if we have new measurements
     pending_measurements = requests.get(f"http://{config.host}:{config.port}/api/broker/get/pending",
-                           params={'fom_name':'Density'}).json()
+                           params={'fom_name':'Density'},headers=auth_header).json()
     if not posted_id in pending_measurements.keys():
         #getting all FOM
         all_measurements = requests.get(f"http://{config.host}:{config.port}/api/broker/get/all_fom",
-                                        params={'fom_name': 'Density'}).json()
+                                        params={'fom_name': 'Density'},headers=auth_header).json()
         #get a XY style table
         measurements = {k:schemas_pydantic.Measurement(**m) for k,m in all_measurements.items()}
         if filter_ingest == 'experiment':
@@ -54,13 +56,13 @@ while True:
                 errs.append(err)
         else:
             target = {chem_name: amnt for amnt, chem_name in zip(try_chem_ratios, xyz['chemicals'])}
-            ratios, err = get_formulation(target)
+            ratios, err = get_formulation(target,auth_header)
             errs = [err]
             print(f"Error of formulation: {err}")
 
         #post the suggestion to the broker server
         #arrange the compounds right
-        compounds = get_compounds()
+        compounds = get_compounds(auth_header)
         ratios_arranged = [ratios[c] for c in [cn.name for cn in compounds]]
 
         form_post = schemas_pydantic.Formulation(compounds=compounds, ratio=ratios_arranged, ratio_method='volumetric')
@@ -71,7 +73,7 @@ while True:
             orig = schemas_pydantic.Origin(origin='simulation', what='Density')
         meas_request = schemas_pydantic.Measurement(formulation=form_post, temperature=temp, pending=True, kind=orig)
         ans = requests.post(f"http://{config.host}:{config.port}/api/broker/request/measurement",
-                                 data=meas_request.json()).json()
+                                 data=meas_request.json(),headers=auth_header).json()
         posted_id = ans['id']
         print(ans)
     else:
