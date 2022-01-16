@@ -297,7 +297,5 @@ def release():
 if __name__ == "__main__":
     db_ = db.dbinteraction()
     db_.reset()
-    uvicorn.run("broker_server:app", host=config.host, port=config.port,
-                ssl_keyfile="../localhost+2-key.pem",
-                ssl_certfile="../localhost+2.pem")
+    uvicorn.run("broker_server:app", host=config.host, port=config.port)
 
