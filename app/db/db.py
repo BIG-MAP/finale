@@ -5,7 +5,7 @@ sys.path.append(os.path.join(rootp, 'db'))
 
 import sqlite3
 from uuid import uuid4
-import config
+import app.config.config as config
 import schemas_pydantic
 
 class dbinteraction:

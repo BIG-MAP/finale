@@ -1,25 +1,36 @@
 import os,sys
-#rootp = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-#sys.path.append(os.path.join(rootp, 'config'))
-#sys.path.append(os.path.join(rootp, 'db'))
-sys.path.append('/code/./app/config')
-sys.path.append('/code/./app/db')
+rootp = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+sys.path.append(rootp)
+sys.path.append(os.path.join(rootp, 'config'))
+sys.path.append(os.path.join(rootp, 'db'))
+#sys.path.append('/code/./app/config')
+#sys.path.append('/code/./app/db')
 
 #ssl certificates make nothing but problems ...
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-
-
+from db.db import schemas_pydantic
+from db import db
+import config as cfg
+import config.config as config
 import uvicorn
 from fastapi import FastAPI, Depends,HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
-import config, db, schemas_pydantic
-from users import users_db
+# import config, db, schemas_pydantic
+# from users import users_db
 
 from uuid import UUID
 from datetime import datetime, timedelta
 from passlib.context import CryptContext
 from jose import JWTError, jwt
+from db.users import users_db
+
+### Start imports Monika ###
+from typing import Union
+#import config.config
+#from db import db
+#from db import schemas_pydantic
+### End imports Monika ###
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -54,7 +65,7 @@ def authenticate_user(fake_db, username: str, password: str):
     return user
 
 
-def create_access_token(data: dict, expires_delta: timedelta | None = None):
+def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None):
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
@@ -137,7 +148,6 @@ def post_chemical(chemical: schemas_pydantic.Chemical,token: str = Depends(oauth
 def post_compound(compound: schemas_pydantic.Compound,token: str = Depends(oauth2_scheme)):
     """
     Experimentalists may post compounds in the setup
-
     :param compound:
     :type compound:
     :return:
@@ -300,12 +310,11 @@ def release():
     """
     The broker server has been shutdown. Goodbye.
     """
-    db_ = db.dbinteraction()
-    db_.reset()
+    #db_ = db.dbinteraction()
+    #db_.reset()
     return {"message": "The broker server has been shutdown. Goodbye.", "id": -1}
 
 if __name__ == "__main__":
     db_ = db.dbinteraction()
     db_.reset()
     uvicorn.run("broker_server:app", host=config.host, port=config.port)
-
