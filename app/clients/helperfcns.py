@@ -36,14 +36,13 @@ def do_experiment(measurement: schemas_pydantic.Measurement):
     print("Starting to mix...")
     _ = requests.get("http://localhost:13372/action/CetoniDevice_action/mix", params={"compounds": compounds, "ratios": ratios}).json()
     print("Mixed. Flows should result in desired volumetric mixing ratio.")
-    print(f"Providing sample from to {measurementtype}.")
+    print(f"Providing sample to {measurementtype}.")
     _ = requests.get("http://localhost:13372/action/CetoniDevice_action/provideSample", params={"measurementtype": measurementtype, "sample_node": "M1.0"}).json()
     print("Sample provided. Ready to measure.")
     print(f"Measuring sample {sampleName}...")
     _ = requests.get("http://localhost:13373/action/densioVisco_action/measure", params={"sampleName": sampleName, "method": method}).json()
     print(f"Waiting for measurement of sample {sampleName} to finish.")
     results = requests.get("http://localhost:13373/action/densioVisco_action/retrieveData", params={"sampleName": sampleName, "method": method, "methodtype": "Measurement", "savePath": "Y:\\extractions"}).json()
-    print("results helperfcns:", results)
     return results # TODO: Adjust output according to the requirements for the posting.
 
 
