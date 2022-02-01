@@ -202,7 +202,7 @@ def simple_rf_optimizer(X_,y,sampling_dens=0.01,simplex=True,maximize=False,retu
 
 def authenticate(user, pw):
     token_response = requests.post(f"http://{config.host}:{config.port}/token",
-                                   data={"username": "helge", "password": "1234", "grant_type": "password"},
+                                   data={"username": "kit", "password": "KIT_huipuischui_23", "grant_type": "password"},
                                    headers={"content-type": "application/x-www-form-urlencoded"})
 
     token_response = token_response.json()
