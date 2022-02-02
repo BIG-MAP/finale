@@ -20,7 +20,7 @@ units = {"density": "g/cm**3", "viscosity": "mPa*s"}
 while True:
     time.sleep(config.sleeptime)
     print("Logging in...")
-    auth_header = authenticate("kit", "KIT_huipuischui_23")
+    auth_header = authenticate("kit", "KIT_huipuischui_23")#"helge", "1234")#
 
     print("Looking for things to do...")
     #someone then asks what measurements are pending

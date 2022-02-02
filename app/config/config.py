@@ -5,10 +5,10 @@ from app.db import schemas_pydantic
 
 #values
 reset: bool = True
-db_file: str = f'session_zdb'
+db_file: str = f'session_zaa.db'
 MAX_D = 7
-host = "stein.hiu-batteries.de"
-port = 49157
+host = "stein.hiu-batteries.de"#"localhost"#"stein.hiu-batteries.de"
+port = 49157#13371#49157
 
 SECRET_KEY = "dcf832f0ec6a80dc36afd95422f0bb1f1c964d916a8c0d29b127d3246e4c88a6"
 ALGORITHM = "HS256"
@@ -84,7 +84,7 @@ EC_EMC = schemas_pydantic.Compound(chemicals=[
 
 
 
-'''Dummy:
+'''Dummy:'''
 dmc = schemas_pydantic.Compound(chemicals=[
     schemas_pydantic.Chemical(smiles='COC(=O)OC', name='DMC', reference='DMC_Elyte_2020')],
     amounts=[schemas_pydantic.Amount(value=1.0, unit='mol')],
@@ -105,6 +105,6 @@ lipf6 = schemas_pydantic.Compound(chemicals=[
     schemas_pydantic.Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F', name='LiPF6', reference='LiPF6_Elyte_2020')],
     amounts=[schemas_pydantic.Amount(value=1.0, unit='mol'), schemas_pydantic.Amount(value=0.2, unit='mol')],
     name='LDMC_LIPF6')
-'''
+
 
 densities = {'[Li+].F[P-](F)(F)(F)(F)F':2.84,'CCOC(=O)OC':0.997,'CC1COC(=O)O1':1.205,'COC(=O)OC':1.073,'unit':'g/cm**3'}
