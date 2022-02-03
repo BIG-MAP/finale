@@ -29,6 +29,7 @@ class Message(BaseModel):
 class OriginEnum(str, Enum):
     experiment = 'experiment'
     simulation = 'simulation'
+    test = 'test'
 
 
 class Origin(BaseModel):
@@ -43,6 +44,9 @@ class ok(BaseModel):
 class FomEnum(str, Enum):
     density = 'Density'
     viscosity = 'Viscosity'
+    conductivity = 'Conductivity'
+    aniondiffusion = "AnionDiffusion"
+    cationdiffusion = "CationDiffusion"
 
 
 class FOM(BaseModel):
@@ -152,6 +156,9 @@ class FomData(BaseModel):
     name: FomEnum = Field(...)  # changed!
     origin: Origin = Field(...)
     measurement_id: str = Field(...)
+    fail: Optional[bool]
+    message: Optional[str]
+    rating: Optional[int]
 
 
 class Measurement(BaseModel):
@@ -179,6 +186,7 @@ class Measurement(BaseModel):
     formulation: Formulation  # = Field(...)
     temperature: Temperature  # = Field(...)
     pending: bool  # = True
+    #processing: Optional[bool] TODO: in later update should also keep track on tah and need to update this
     fom_data: Optional[FomData]  # = []
     kind: Origin
     # TODO: if pending True raw and fom may not be set!
