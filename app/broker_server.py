@@ -21,6 +21,8 @@ from datetime import datetime, timedelta
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 
+from math import nan
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -192,7 +194,7 @@ def get_measurement_by_id(query_id: str,token: str = Depends(oauth2_scheme)):
 #        return {"message": "other error", "id": query_id}
 
 @app.get("/api/broker/get/all_fom")
-async def all_fom(fom_name: str,token: str = Depends(oauth2_scheme)):
+async def all_fom(fom_name: schemas_pydantic.FomEnum,debug_mode=False, token: str = Depends(oauth2_scheme)):
     # get all the measurement ids where pending is false
     db_ = db.dbinteraction()
     response = db_.query_X_by_Y('measurements', 'pending', False, return_all=True)
@@ -200,17 +202,21 @@ async def all_fom(fom_name: str,token: str = Depends(oauth2_scheme)):
     db_.con.close()
     # go through all responses to make a
     mlist = {}
-    for r in response:
-        print(r[-2])
-        json_ = schemas_pydantic.Measurement.parse_raw(r[-2])
-        if not json_.fom_data == None:
-            if json_.fom_data.name == fom_name:
-                mlist[r[-1]] = json_
+    for ri,r in enumerate(response):
+        try:
+            print(r[-2])
+            json_ = schemas_pydantic.Measurement.parse_raw(r[-2])
+            if not json_.fom_data == None:
+                if json_.fom_data.name == fom_name:
+                    mlist[r[-1]] = json_
+        except ValueError:
+            if debug_mode:
+                mlist[ri] = {'error with: ': r[-2]}
     return mlist
 
 
 @app.get("/api/broker/get/pending")
-async def get_pending(fom_name: str,token: str = Depends(oauth2_scheme)):
+async def get_pending(fom_name: schemas_pydantic.FomEnum,token: str = Depends(oauth2_scheme)):
     # get all the measurement ids where pending is false
     db_ = db.dbinteraction()
     response = db_.query_X_by_Y('measurements', 'pending', True, return_all=True)
@@ -221,9 +227,12 @@ async def get_pending(fom_name: str,token: str = Depends(oauth2_scheme)):
     # go through all responses to make a
     mlist = {}
     for r in response:
-        json_ = schemas_pydantic.Measurement.parse_raw(r[-2])
-        if json_.kind.what == fom_name:
-            mlist[r[-1]] = json_
+        try:
+            json_ = schemas_pydantic.Measurement.parse_raw(r[-2])
+            if json_.kind.what == fom_name:
+                mlist[r[-1]] = json_
+        except:
+            pass
     return mlist
 
 @app.post("/api/broker/post/measurement")
@@ -235,6 +244,8 @@ def post_measurement(measurement: schemas_pydantic.Measurement, request_id: str 
     # check that there is a fom
     if measurement.fom_data == None:
         return {"message": "posted measurement that has no fom data", "id": -1}
+    if measurement.fom_data.value == nan:
+        raise ValueError
 
     db_ = db.dbinteraction()
     id_ = db_.add_measurement(measurement)
