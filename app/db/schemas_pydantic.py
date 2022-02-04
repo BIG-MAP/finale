@@ -101,7 +101,7 @@ class Amount(BaseModel):
 
     @validator('unit')
     def amount_unit_validator(cls, v):
-        if not v in ['mol', 'Mol','at.-%'.'mol.-%']:
+        if not v in ['mol', 'Mol','at.-%','mol.-%']:
             raise ValueError('Unit must be mol or other')
         return v.title()
 
