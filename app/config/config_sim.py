@@ -8,7 +8,7 @@ reset: bool = True
 db_file: str = f'session_zaa.db'
 MAX_D = 7
 host = "stein.hiu-batteries.de"#"localhost"#"stein.hiu-batteries.de"
-port = 13371#49157
+port = 49157
 
 SECRET_KEY = "dcf832f0ec6a80dc36afd95422f0bb1f1c964d916a8c0d29b127d3246e4c88a6"
 ALGORITHM = "HS256"
@@ -50,7 +50,7 @@ E = schemas_pydantic.Compound(chemicals=[
 '''
 
 ## Actual  compounds
-LiPF6_EC_DMC = schemas_pydantic.Compound(chemicals=[
+LIPF6_EC_DMC = schemas_pydantic.Compound(chemicals=[
     schemas_pydantic.Chemical(smiles='C1COC(=O)O1', name='EC', reference='EC_Elyte_2020'),
     schemas_pydantic.Chemical(smiles='COC(=O)OC', name='DMC', reference='DMC_Elyte_2020'),
     schemas_pydantic.Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F', name='LiPF6', reference='LiPF6_Elyte_2020')],

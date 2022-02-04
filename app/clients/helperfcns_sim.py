@@ -33,16 +33,16 @@ def do_experiment(measurement: schemas_pydantic.Measurement):
     method = "Lovis-DMA_MultiMeasure_20" #TODO: Change when new method implemented.
     measurementtype = "densioVisco"
     print("Starting to mix...")
-    _ = requests.get("http://localhost:13372/action/CetoniDevice_action/mix", params={"compounds": compounds, "ratios": ratios}).json()
+    _ = requests.get("http://localhost:13374/action/CetoniDevice_action/mix", params={"compounds": compounds, "ratios": ratios}).json()
     print("Mixed. Flows should result in desired volumetric mixing ratio.")
     print(f"Providing sample to {measurementtype}.")
-    _ = requests.get("http://localhost:13372/action/CetoniDevice_action/provideSample", params={"measurementtype": measurementtype, "sample_node": "M1.0"}).json()
+    _ = requests.get("http://localhost:13374/action/CetoniDevice_action/provideSample", params={"measurementtype": measurementtype, "sample_node": "M1.0"}).json()
     print("Sample provided. Ready to measure.")
     print(f"Measuring sample {sampleName}...")
-    _ = requests.get("http://localhost:13373/action/densioVisco_action/measure", params={"sampleName": sampleName, "method": method}).json()
+    _ = requests.get("http://localhost:13375/action/densioVisco_action/measure", params={"sampleName": sampleName, "method": method}).json()
     print(f"Waiting for measurement of sample {sampleName} to finish.")
-    results = requests.get("http://localhost:13373/action/densioVisco_action/retrieveData", params={"sampleName": sampleName, "method": method, "methodtype": "Measurement", "savePath": "Y:\\extractions"}).json()
-    return results
+    results = requests.get("http://localhost:13375/action/densioVisco_action/retrieveData", params={"sampleName": sampleName, "method": method, "methodtype": "Measurement", "savePath": "Y:\\extractions"}).json()
+    return results # TODO: Adjust output according to the requirements for the posting.
 
 
 def do_simulation(measurement: schemas_pydantic.Measurement):

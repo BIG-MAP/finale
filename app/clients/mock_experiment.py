@@ -40,35 +40,26 @@ while True:
 
             for key, val in fom_value.items():
                 if key != "sampleName":
-                    print("key:", key, "val:", val)
-                    print(type(val), type(val["values"]), type(val["values"][0]))
-                    valFloat = []
                     for v in val["values"]:
-                        try:
-                            valFloat.append(float(v))
-                        except ValueError:
-                            valFloat.append(np.NaN)
-                    valFloat = np.array(valFloat)
+                        if v != np.NaN:
+                            fom = schemas_pydantic.FomData(value=v,
+                                                        unit=units[key],
+                                                        origin=schemas_pydantic.Origin(origin='experiment'),
+                                                        measurement_id=fom_value["sampleName"],
+                                                        name=str(key.capitalize()))
 
+                            #this adds the data without much hassle but with type checking
 
-                    fom = schemas_pydantic.FomData(value=np.mean(valFloat),
-                                                unit=units[key],
-                                                origin=schemas_pydantic.Origin(origin='experiment'),
-                                                measurement_id=fom_value["sampleName"],
-                                                name=str(key.capitalize()))
+                            posted_meas = schemas_pydantic.Measurement(formulation=request_meas.formulation,
+                                                                    temperature=request_meas.temperature,
+                                                                    pending=False,
+                                                                    fom_data=fom,
+                                                                    kind=schemas_pydantic.Origin(origin='experiment'))
 
-                    #this adds the data without much hassle but with type checking
+                            print(posted_meas)
 
-                    posted_meas = schemas_pydantic.Measurement(formulation=request_meas.formulation,
-                                                            temperature=request_meas.temperature,
-                                                            pending=False,
-                                                            fom_data=fom,
-                                                            kind=schemas_pydantic.Origin(origin='experiment'))
-
-                    print(posted_meas)
-
-                    ans_ = requests.post(f"http://{config.host}:{config.port}/api/broker/post/measurement",
-                                        data=posted_meas.json(),params={'request_id':request_id},headers=auth_header).json()
-            print(f"Posted an experiment ... Response: {ans_}")
+                            ans_ = requests.post(f"http://{config.host}:{config.port}/api/broker/post/measurement",
+                                                data=posted_meas.json(),params={'request_id':request_id},headers=auth_header).json()
+                            print(f"Posted an experiment ... Response: {ans_}")
         else:
             print("Pending a simulation ... nothing to do")

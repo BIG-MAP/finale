@@ -17,7 +17,7 @@ auth_header = helperfcns.authenticate("kit", "KIT_huipuischui_23")#"helge", "123
 ids = []
 # #LIPF6
 # form = schemas_pydantic.Formulation(compounds=[config.lipf6], ratio=[1], ratio_method='volumetric')
-temp = schemas_pydantic.Temperature(value=303.15, unit='K')
+temp = schemas_pydantic.Temperature(value=293.15, unit='K')
 orig = schemas_pydantic.Origin(origin='experiment', what='Density')
 # meas = schemas_pydantic.Measurement(formulation=form, temperature=temp, pending=True, kind=orig)
 # ans_ = requests.post(f"http://{config.host}:{config.port}/api/broker/request/measurement",
@@ -50,30 +50,30 @@ orig = schemas_pydantic.Origin(origin='experiment', what='Density')
 
 # LiPF6 in EC/EMC
 form = schemas_pydantic.Formulation(compounds=[config.LiPF6_EC_EMC], ratio=[1], ratio_method='volumetric')
-meas = schemas_pydantic.Measurement(formulation=form, temperature=temp-10., pending=True, kind=orig)
+meas = schemas_pydantic.Measurement(formulation=form, temperature=temp, pending=True, kind=orig)
 ans_ = requests.post(f"http://{config.host}:{config.port}/api/broker/request/measurement",
                     data=meas.json(),headers=auth_header).json()
 ids.append(ans_)
 
-# LiPF6 in EC/DMC
-form = schemas_pydantic.Formulation(compounds=[config.LiPF6_EC_DMC], ratio=[1], ratio_method='volumetric')
-meas = schemas_pydantic.Measurement(formulation=form, temperature=temp-10., pending=True, kind=orig)
-ans_ = requests.post(f"http://{config.host}:{config.port}/api/broker/request/measurement",
-                    data=meas.json(),headers=auth_header).json()
-ids.append(ans_)
+# # LiPF6 in EC/DMC
+# form = schemas_pydantic.Formulation(compounds=[config.LiPF6_EC_DMC], ratio=[1], ratio_method='volumetric')
+# meas = schemas_pydantic.Measurement(formulation=form, temperature=temp, pending=True, kind=orig)
+# ans_ = requests.post(f"http://{config.host}:{config.port}/api/broker/request/measurement",
+#                     data=meas.json(),headers=auth_header).json()
+# ids.append(ans_)
 
 # EC/EMC
 form = schemas_pydantic.Formulation(compounds=[config.EC_EMC], ratio=[1], ratio_method='volumetric')
-meas = schemas_pydantic.Measurement(formulation=form, temperature=temp-10., pending=True, kind=orig)
+meas = schemas_pydantic.Measurement(formulation=form, temperature=temp, pending=True, kind=orig)
 ans_ = requests.post(f"http://{config.host}:{config.port}/api/broker/request/measurement",
                     data=meas.json(),headers=auth_header).json()
 ids.append(ans_)
 
-# EC/DMC
-form = schemas_pydantic.Formulation(compounds=[config.EC_DMC], ratio=[1], ratio_method='volumetric')
-meas = schemas_pydantic.Measurement(formulation=form, temperature=temp-10., pending=True, kind=orig)
-ans_ = requests.post(f"http://{config.host}:{config.port}/api/broker/request/measurement",
-                    data=meas.json(),headers=auth_header).json()
-ids.append(ans_)
+# # EC/DMC
+# form = schemas_pydantic.Formulation(compounds=[config.EC_DMC], ratio=[1], ratio_method='volumetric')
+# meas = schemas_pydantic.Measurement(formulation=form, temperature=temp, pending=True, kind=orig)
+# ans_ = requests.post(f"http://{config.host}:{config.port}/api/broker/request/measurement",
+#                     data=meas.json(),headers=auth_header).json()
+# ids.append(ans_)
 
 print(ids)
