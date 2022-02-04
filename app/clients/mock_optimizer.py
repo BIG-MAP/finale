@@ -16,7 +16,7 @@ request_type = "experiment"
 posted_id = "no_posted_id_yet"
 
 while True:
-    auth_header = authenticate("helge", "1234")
+    auth_header = authenticate("kit", "KIT_huischuipui_23")
 
     #check if we have new measurements
     pending_measurements = requests.get(f"http://{config.host}:{config.port}/api/broker/get/pending",

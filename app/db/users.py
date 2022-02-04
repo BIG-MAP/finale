@@ -1,7 +1,6 @@
 #from passlib.context import CryptContext
 #pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 #pwd_context.hash("password")
-
 users_db = {
     "kit": {
         "username": "kit",
