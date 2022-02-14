@@ -26,7 +26,7 @@ from jose import JWTError, jwt
 from db.users import users_db
 
 ### Start imports Monika ###
-from typing import Union
+from typing import Union    # https://stackoverflow.com/questions/45957615/check-a-variable-against-union-type-at-runtime-in-python-3-6
 #import config.config
 #from db import db
 #from db import schemas_pydantic

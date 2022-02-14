@@ -8,9 +8,9 @@ sys.path.append(os.path.dirname(rootp))
 
 print(rootp)
 
-import config
+from app.config import config
 from app.db import schemas_pydantic
-from helperfcns import do_experiment,authenticate
+from app.clients.helperfcns import do_experiment,authenticate
 import requests
 import time
 import numpy as np
@@ -20,7 +20,7 @@ units = {"density": "g/cm**3", "viscosity": "mPa*s"}
 while True:
     time.sleep(config.sleeptime)
     print("Logging in...")
-    auth_header = authenticate("kit", "KIT_huipuischui_23")#"helge", "1234")#
+    auth_header = authenticate("helge", "1234")#"kit", "KIT_huipuischui_23")#
 
     print("Looking for things to do...")
     #someone then asks what measurements are pending
@@ -39,9 +39,9 @@ while True:
             print("fom_value:", fom_value)
 
             for key, val in fom_value.items():
-                if key != "sampleName":
+                if key != "sampleName" and key != "quality":
                     for v in val["values"]:
-                        if v != np.NaN:
+                        if not np.isnan(v):
                             fom = schemas_pydantic.FomData(value=v,
                                                         unit=units[key],
                                                         origin=schemas_pydantic.Origin(origin='experiment'),
