@@ -10,7 +10,8 @@ print(rootp)
 
 from app.config import config
 from app.db import schemas_pydantic
-from app.clients.helperfcns import do_experiment,authenticate
+from app.clients.helperfcns import authenticate#do_experiment,authenticate
+from app.clients.helperfcns_externalDoExperiment import do_experiment_densioVisco as do_experiment
 import requests
 import time
 import numpy as np
@@ -41,7 +42,7 @@ while True:
             for key, val in fom_value.items():
                 if key != "sampleName" and key != "quality":
                     for v in val["values"]:
-                        if not np.isnan(v):
+                        if not np.isnan(float(v)):
                             fom = schemas_pydantic.FomData(value=v,
                                                         unit=units[key],
                                                         origin=schemas_pydantic.Origin(origin='experiment'),

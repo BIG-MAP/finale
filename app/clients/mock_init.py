@@ -9,9 +9,9 @@ import config
 
 from db import schemas_pydantic
 import requests
-from app.clients import helperfcns
+from app.clients import helperfcns_externalDoExperiment as helperfcns
 
-auth_header = helperfcns.authenticate("kit", "KIT_huipuischui_23")#"helge", "1234")#
+auth_header = helperfcns.authenticate("helge", "1234")#"kit", "KIT_huipuischui_23")#
 
 #initialize the pure compounds so nothing complains
 ids = []

@@ -5,10 +5,10 @@ from app.db import schemas_pydantic
 
 #values
 reset: bool = True
-db_file: str = f'session_zaa.db'
+db_file: str = f'session_12345.db'
 MAX_D = 7
-host = "stein.hiu-batteries.de"#"localhost"#"stein.hiu-batteries.de"
-port = 49157
+host = "localhost"#"stein.hiu-batteries.de"#
+port = 13371#13378#49157
 
 SECRET_KEY = "dcf832f0ec6a80dc36afd95422f0bb1f1c964d916a8c0d29b127d3246e4c88a6"
 ALGORITHM = "HS256"
