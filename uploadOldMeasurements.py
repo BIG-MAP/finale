@@ -62,7 +62,7 @@ from app.db.schemas_pydantic import Formulation, Compound, Chemical, Amount, Tem
 from app.config import config
 from app.clients.helperfcns import authenticate
 
-auth_header = authenticate("helge", "1234")
+auth_header = authenticate("kit", "KIT_huipuischui_23")#"helge", "1234")
 
 savePath = r"C:\Users\remote\Desktop"
 
@@ -148,7 +148,7 @@ for sampleName in data["Metadaten::Probenname"].unique():
                                             kind=info[sampleName]["kind"])
                     # print("\n \n ", measurementPost, "\n \n ")
                     ans_ = requests.post(f"http://{config.host}:{config.port}/api/broker/post/measurement",
-                                        data=measurementPost.json(),params={'request_id':info[sampleName]["reqID"]},headers=auth_header).json()
+                                        data=measurementPost.json(),headers=auth_header).json()
     with open(f"{savePath}\\{sampleName}_raw.json", "w") as file:
         file.write(str(extractedData))   # https://stackoverflow.com/questions/29223246/how-do-i-save-data-in-a-text-file-python
     with open(f"{savePath}\\{sampleName}_result.json", "w") as file:
