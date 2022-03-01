@@ -1,0 +1,40 @@
+{
+  "title": "Origin",
+  "type": "object",
+  "properties": {
+    "origin": {
+      "$ref": "#/definitions/OriginEnum"
+    },
+    "what": {
+      "$ref": "#/definitions/FomEnum"
+    }
+  },
+  "required": [
+    "origin"
+  ],
+  "definitions": {
+    "OriginEnum": {
+      "title": "OriginEnum",
+      "description": "An enumeration.",
+      "enum": [
+        "experiment",
+        "simulation",
+        "test"
+      ],
+      "type": "string"
+    },
+    "FomEnum": {
+      "title": "FomEnum",
+      "description": "An enumeration.",
+      "enum": [
+        "density",
+        "viscosity",
+        "conductivity",
+        "aniondiffusion",
+        "cationdiffusion",
+        "vectorial"
+      ],
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "title": "FomData",
+  "description": "This is a wrapper for figure of merit (FOM) i.e. scalar data\n\nExample:\n    fom_1 = FomData(value=3,unit=\"g/cm**3\",origin=\"experiment\")",
+  "type": "object",
+  "properties": {
+    "values": {
+      "title": "Values",
+      "type": "array",
+      "items": {
+        "type": "number"
+      }
+    },
+    "unit": {
+      "title": "Unit",
+      "type": "string"
+    },
+    "dim": {
+      "title": "Dim",
+      "type": "integer"
+    },
+    "name": {
+      "$ref": "#/definitions/FomEnum"
+    },
+    "origin": {
+      "$ref": "#/definitions/Origin"
+    },
+    "internalReference": {
+      "title": "Internalreference",
+      "type": "string"
+    },
+    "fail": {
+      "title": "Fail",
+      "type": "boolean"
+    },
+    "message": {
+      "title": "Message",
+      "type": "string"
+    },
+    "rating": {
+      "title": "Rating",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "values",
+    "unit",
+    "dim",
+    "name",
+    "origin",
+    "internalReference"
+  ],
+  "definitions": {
+    "FomEnum": {
+      "title": "FomEnum",
+      "description": "An enumeration.",
+      "enum": [
+        "density",
+        "viscosity",
+        "conductivity",
+        "aniondiffusion",
+        "cationdiffusion",
+        "vectorial"
+      ],
+      "type": "string"
+    },
+    "OriginEnum": {
+      "title": "OriginEnum",
+      "description": "An enumeration.",
+      "enum": [
+        "experiment",
+        "simulation",
+        "test"
+      ],
+      "type": "string"
+    },
+    "Origin": {
+      "title": "Origin",
+      "type": "object",
+      "properties": {
+        "origin": {
+          "$ref": "#/definitions/OriginEnum"
+        },
+        "what": {
+          "$ref": "#/definitions/FomEnum"
+        }
+      },
+      "required": [
+        "origin"
+      ]
+    }
+  }
+}

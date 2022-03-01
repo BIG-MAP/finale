@@ -1,0 +1,227 @@
+{
+  "title": "Measurement",
+  "description": "A Measurement is done on a Formulation and contains data\n\nExample:\nA = Compound(chemicals=[Chemical(smiles='COC(=O)OC',name='DMC',reference='DMC_ELyte_2020'),\n                              Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F',name='LiPF6',reference='LiPF6_Elyte_2020')],\n                   amounts=[Amount(value=0.5,unit='mol'),Amount(value=0.1,unit='mol')],\n                   name='LiPF6_salt_in_DMC_5:1')\nB = Compound(chemicals=[Chemical(smiles='CC1COC(=O)O1',name='PC',reference='PC_ELyte_2020'),\n                              Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F',name='LiPF6',reference='LiPF6_Elyte_2020')],\n                   amounts=[Amount(value=0.5,unit='mol'),Amount(value=0.1,unit='mol')],\n                   name='LiPF6_salt_in_PC_5:1')\nform_1 = Formulation(compounds=[A,B],ratio=[3,1],ratio_method='volumetric')\n\ntemp_1 = Temperature(unit='K',value=380)\norig_1 = Origin(origin='experiment')\nfom_1 = FomData(value=3,unit=\"g/cm**3\",origin=orig_1,measurement_id='123',name='Density')\n\nmeas_1 = Measurement(formulation=form_1, temperature=temp_1,pending=True,fom_data=fom_1,kind='experiment')",
+  "type": "object",
+  "properties": {
+    "formulation": {
+      "$ref": "#/definitions/Formulation"
+    },
+    "temperature": {
+      "$ref": "#/definitions/Temperature"
+    },
+    "pending": {
+      "title": "Pending",
+      "type": "boolean"
+    },
+    "fom_data": {
+      "title": "Fom Data",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/FomData"
+      }
+    },
+    "kind": {
+      "$ref": "#/definitions/Origin"
+    }
+  },
+  "required": [
+    "formulation",
+    "temperature",
+    "pending",
+    "fom_data",
+    "kind"
+  ],
+  "definitions": {
+    "Chemical": {
+      "title": "Chemical",
+      "description": "This defines a chemical\n\nEvery chemical needs a SMILES and a name like DMC => COC(=O)OC\nA reference is an optional thing like \"Vile 211003-Vial2-DMC\"\nExample:\n    Chemical(smiles='COC(=O)OC',name='DMC',reference='DMC_Elyte_2020')",
+      "type": "object",
+      "properties": {
+        "smiles": {
+          "title": "Smiles",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "reference": {
+          "title": "Reference",
+          "default": "",
+          "type": "string"
+        }
+      },
+      "required": [
+        "smiles",
+        "name"
+      ]
+    },
+    "Amount": {
+      "title": "Amount",
+      "description": "We store amount in units of mole TODO: Maybe recalc to mol?\n\nAmount is stored as a tuple like object i.e. how much and of what unit\nCurrently we only do mol\nExample: Amount(value=0.001,unit='mol')",
+      "type": "object",
+      "properties": {
+        "value": {
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "unit"
+      ]
+    },
+    "Ratio": {
+      "title": "Ratio",
+      "description": "An enumeration.",
+      "enum": [
+        "molar",
+        "molal",
+        "other"
+      ],
+      "type": "string"
+    },
+    "Formulation": {
+      "title": "Formulation",
+      "description": "A Formulation is a ratio mix of different compounds\n\nExample:\nA = Compound(chemicals=[Chemical(smiles='COC(=O)OC',name='DMC',reference='DMC_ELyte_2020'),\n                              Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F',name='LiPF6',reference='LiPF6_Elyte_2020')],\n                   amounts=[Amount(value=0.5,unit='mol'),Amount(value=0.1,unit='mol')],\n                   name='LiPF6_salt_in_DMC_5:1')\nB = Compound(chemicals=[Chemical(smiles='CC1COC(=O)O1',name='PC',reference='PC_ELyte_2020'),\n                              Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F',name='LiPF6',reference='LiPF6_Elyte_2020')],\n                   amounts=[Amount(value=0.5,unit='mol'),Amount(value=0.1,unit='mol')],\n                   name='LiPF6_salt_in_PC_5:1')\nform_1 = Formulation(compounds=[A,B],ratio=[3,1],ratio_method='volumetric')",
+      "type": "object",
+      "properties": {
+        "chemicals": {
+          "title": "Chemicals",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Chemical"
+          }
+        },
+        "amounts": {
+          "title": "Amounts",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Amount"
+          }
+        },
+        "ratio_method": {
+          "$ref": "#/definitions/Ratio"
+        }
+      },
+      "required": [
+        "chemicals",
+        "amounts",
+        "ratio_method"
+      ]
+    },
+    "Temperature": {
+      "title": "Temperature",
+      "description": "Temperature in Kelvin\nExample:\n    Temperature(value=380,unit='K')",
+      "type": "object",
+      "properties": {
+        "value": {
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "unit"
+      ]
+    },
+    "FomEnum": {
+      "title": "FomEnum",
+      "description": "An enumeration.",
+      "enum": [
+        "density",
+        "viscosity",
+        "conductivity",
+        "aniondiffusion",
+        "cationdiffusion",
+        "vectorial"
+      ],
+      "type": "string"
+    },
+    "OriginEnum": {
+      "title": "OriginEnum",
+      "description": "An enumeration.",
+      "enum": [
+        "experiment",
+        "simulation",
+        "test"
+      ],
+      "type": "string"
+    },
+    "Origin": {
+      "title": "Origin",
+      "type": "object",
+      "properties": {
+        "origin": {
+          "$ref": "#/definitions/OriginEnum"
+        },
+        "what": {
+          "$ref": "#/definitions/FomEnum"
+        }
+      },
+      "required": [
+        "origin"
+      ]
+    },
+    "FomData": {
+      "title": "FomData",
+      "description": "This is a wrapper for figure of merit (FOM) i.e. scalar data\n\nExample:\n    fom_1 = FomData(value=3,unit=\"g/cm**3\",origin=\"experiment\")",
+      "type": "object",
+      "properties": {
+        "values": {
+          "title": "Values",
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "unit": {
+          "title": "Unit",
+          "type": "string"
+        },
+        "dim": {
+          "title": "Dim",
+          "type": "integer"
+        },
+        "name": {
+          "$ref": "#/definitions/FomEnum"
+        },
+        "origin": {
+          "$ref": "#/definitions/Origin"
+        },
+        "internalReference": {
+          "title": "Internalreference",
+          "type": "string"
+        },
+        "fail": {
+          "title": "Fail",
+          "type": "boolean"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "rating": {
+          "title": "Rating",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "values",
+        "unit",
+        "dim",
+        "name",
+        "origin",
+        "internalReference"
+      ]
+    }
+  }
+}

@@ -67,7 +67,7 @@ class Chemical(BaseModel):
     Every chemical needs a SMILES and a name like DMC => COC(=O)OC
     A reference is an optional thing like "Vile 211003-Vial2-DMC"
     Example:
-        Chemical(smiles='COC(=O)OC',name='DMC',reference='DMC_Elyte_2020')
+    dmc = schemas_pydantic.Chemical(smiles='COC(=O)OC', name='DMC', reference='DMC_Elyte_2020')
     """
     smiles: str  # = Field(...)
     name: str  # = Field(...)
@@ -140,10 +140,10 @@ class Compound(BaseModel):
     A Compound can be made up of one or more chemicals of amounts
     This is needed as some electrolyte chemicals are not liquid in their pure form at RT
     Example:
-        Compound(chemicals=[Chemical(smiles='COC(=O)OC',name='DMC',reference='DMC_Elyte_2020'),
-                                  Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F',name='LiPF6',reference='LiPF6_Elyte_2020')],
-                       amounts=[Amount(value=0.5,unit='mol'),Amount(value=0.1,unit='mol')],
-                       name='LiPF6_salt_in_DMC_5:1')
+        dmc_compound = schemas_pydantic.Compound(chemicals=[
+    schemas_pydantic.Chemical(smiles='COC(=O)OC', name='DMC', reference='DMC_Elyte_2020')],
+    amounts=[schemas_pydantic.Amount(value=1.0, unit='mol')],
+    name='DMC')
     """
     chemicals: List[Chemical] = Field(...)  # breaking change as from now on users need to specify a compound with only one chemical
     amounts: List[Amount] = Field(...)
@@ -166,15 +166,10 @@ class Formulation(BaseModel):
     """A Formulation is a ratio mix of different compounds
 
     Example:
-    A = Compound(chemicals=[Chemical(smiles='COC(=O)OC',name='DMC',reference='DMC_ELyte_2020'),
-                                  Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F',name='LiPF6',reference='LiPF6_Elyte_2020')],
-                       amounts=[Amount(value=0.5,unit='mol'),Amount(value=0.1,unit='mol')],
-                       name='LiPF6_salt_in_DMC_5:1')
-    B = Compound(chemicals=[Chemical(smiles='CC1COC(=O)O1',name='PC',reference='PC_ELyte_2020'),
-                                  Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F',name='LiPF6',reference='LiPF6_Elyte_2020')],
-                       amounts=[Amount(value=0.5,unit='mol'),Amount(value=0.1,unit='mol')],
-                       name='LiPF6_salt_in_PC_5:1')
-    form_1 = Formulation(compounds=[A,B],ratio=[3,1],ratio_method='volumetric')
+    form = schemas_pydantic.Formulation(chemicals=[schemas_pydantic.Chemical(smiles='COC(=O)OC', name='DMC', reference='DMC_Elyte_2020'),
+                                                schemas_pydantic.Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F', name='LiPF6', reference='LiPF6_Elyte_2020')],
+    amounts=[schemas_pydantic.Amount(value=1.0, unit='mol'),schemas_pydantic.Amount(value=0.1, unit='mol')],
+    ratio_method='molal')
     """
     # A formulation can consist
     chemicals: List[Chemical] = Field(...)
@@ -188,7 +183,13 @@ class FomData(BaseModel):
     """This is a wrapper for figure of merit (FOM) i.e. scalar data
 
     Example:
-        fom_1 = FomData(value=3,unit="g/cm**3",origin="experiment")
+    data = schemas_pydantic.FomData(values=[1.23],unit='g/cm**2',dim=1,
+                                    name='density',origin=orig,internalReference='aTest',
+                                    fail=False, message='My Message', rating=1)
+
+    data_nd = schemas_pydantic.FomData(values=[1.23,234,12,13,56,26],unit='g/cm**2',dim=6,
+                                    name='vectorial',origin=orig,internalReference='aTest',
+                                    fail=False, message='My Message', rating=1)
     """
     values: List[float] #breaking change as now you'd have to give it [[1.23]]
     unit: str = Field(...)
@@ -205,21 +206,8 @@ class Measurement(BaseModel):
     """A Measurement is done on a Formulation and contains data
 
     Example:
-    A = Compound(chemicals=[Chemical(smiles='COC(=O)OC',name='DMC',reference='DMC_ELyte_2020'),
-                                  Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F',name='LiPF6',reference='LiPF6_Elyte_2020')],
-                       amounts=[Amount(value=0.5,unit='mol'),Amount(value=0.1,unit='mol')],
-                       name='LiPF6_salt_in_DMC_5:1')
-    B = Compound(chemicals=[Chemical(smiles='CC1COC(=O)O1',name='PC',reference='PC_ELyte_2020'),
-                                  Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F',name='LiPF6',reference='LiPF6_Elyte_2020')],
-                       amounts=[Amount(value=0.5,unit='mol'),Amount(value=0.1,unit='mol')],
-                       name='LiPF6_salt_in_PC_5:1')
-    form_1 = Formulation(compounds=[A,B],ratio=[3,1],ratio_method='volumetric')
+    meas = schemas_pydantic.Measurement(formulation=form,temperature=temp,pending=False,fom_data=[data],kind=orig)
 
-    temp_1 = Temperature(unit='K',value=380)
-    orig_1 = Origin(origin='experiment')
-    fom_1 = FomData(value=3,unit="g/cm**3",origin=orig_1,measurement_id='123',name='Density')
-
-    meas_1 = Measurement(formulation=form_1, temperature=temp_1,pending=True,fom_data=fom_1,kind='experiment')
 
     """
     # ID: UUID = Field(default_factory=uuid4)

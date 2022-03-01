@@ -1,0 +1,24 @@
+{
+  "title": "Chemical",
+  "description": "This defines a chemical\n\nEvery chemical needs a SMILES and a name like DMC => COC(=O)OC\nA reference is an optional thing like \"Vile 211003-Vial2-DMC\"\nExample:\n    Chemical(smiles='COC(=O)OC',name='DMC',reference='DMC_Elyte_2020')",
+  "type": "object",
+  "properties": {
+    "smiles": {
+      "title": "Smiles",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "reference": {
+      "title": "Reference",
+      "default": "",
+      "type": "string"
+    }
+  },
+  "required": [
+    "smiles",
+    "name"
+  ]
+}
