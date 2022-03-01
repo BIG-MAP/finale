@@ -8,6 +8,7 @@ class User(BaseModel):
     full_name: Optional[str] = None
     level: Optional[int] = 0
 
+
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -32,21 +33,28 @@ class OriginEnum(str, Enum):
     test = 'test'
 
 
-class Origin(BaseModel):
-    origin: OriginEnum
-    what: Optional[str]
-
-
 class ok(BaseModel):
     typeob: str
 
 
 class FomEnum(str, Enum):
-    density = 'Density'
-    viscosity = 'Viscosity'
-    conductivity = 'Conductivity'
-    aniondiffusion = "AnionDiffusion"
-    cationdiffusion = "CationDiffusion"
+    density = 'density'
+    viscosity = 'viscosity'
+    conductivity = 'conductivity'
+    aniondiffusion = 'aniondiffusion'
+    cationdiffusion = 'cationdiffusion'
+    vectorial = 'vectorial'
+
+
+class Origin(BaseModel):
+    origin: OriginEnum
+    what: Optional[FomEnum]
+
+
+class Ratio(str, Enum):
+    molar = 'molar'
+    molal = 'molal'
+    other = 'other'
 
 
 class FOM(BaseModel):
@@ -105,9 +113,29 @@ class Amount(BaseModel):
             raise ValueError('Unit must be mol or other')
         return v.title()
 
+class ChemRange(BaseModel):
+    """We store amount in units of mole TODO: Maybe recalc to mol?
 
+    Amount is stored as a tuple like object i.e. how much and of what unit
+    Currently we only do mol
+    Example: Amount(value=0.001,unit='mol')
+    """
+    min_value: float  # = Field(...)
+    max_value: float  # = Field(...)
+    chemical: Chemical
+    unit: str  # = Field(...)
+
+    @validator('unit')
+    def amount_unit_validator(cls, v):
+        if not v in ['mol', 'Mol','at.-%','mol.-%']:
+            raise ValueError('Unit must be mol or other')
+        return v.title()
+
+
+
+#legacy
 class Compound(BaseModel):
-    """Formulations are lists of Compound which are lists of chemicals
+    """Legacy Schema mostly used by experimentalists: Formulations are lists of Compound which are lists of chemicals
 
     A Compound can be made up of one or more chemicals of amounts
     This is needed as some electrolyte chemicals are not liquid in their pure form at RT
@@ -117,10 +145,21 @@ class Compound(BaseModel):
                        amounts=[Amount(value=0.5,unit='mol'),Amount(value=0.1,unit='mol')],
                        name='LiPF6_salt_in_DMC_5:1')
     """
-    chemicals: List[Chemical] = Field(...)  # can be a list of len>=1
+    chemicals: List[Chemical] = Field(...)  # breaking change as from now on users need to specify a compound with only one chemical
     amounts: List[Amount] = Field(...)
     name: str  # = Field(...)
     # TODO: Validate that len matches
+
+
+class Agent(BaseModel):
+    """This stores the range accesibile by a machine
+    """
+    online: bool #is it online
+    kind: OriginEnum #theory or experiment
+    chemicals: List[Chemical]
+    ranges: List[ChemRange]
+    name: str
+    compounds: Optional[List[Compound]]
 
 
 class Formulation(BaseModel):
@@ -138,9 +177,9 @@ class Formulation(BaseModel):
     form_1 = Formulation(compounds=[A,B],ratio=[3,1],ratio_method='volumetric')
     """
     # A formulation can consist
-    compounds: List[Compound] = Field(...)
-    ratio: List[float] = Field(...)
-    ratio_method: str = Field(...)
+    chemicals: List[Chemical] = Field(...)
+    amounts: List[Amount] = Field(...)
+    ratio_method: Ratio
     # TODO: Validate that len matches
     # TODO: Tinker about ratios and ambiguities
 
@@ -151,11 +190,12 @@ class FomData(BaseModel):
     Example:
         fom_1 = FomData(value=3,unit="g/cm**3",origin="experiment")
     """
-    value: float  # = Field(...)
+    values: List[float] #breaking change as now you'd have to give it [[1.23]]
     unit: str = Field(...)
-    name: FomEnum = Field(...)  # changed!
+    dim: int = Field(...)
+    name: FomEnum = Field(...)
     origin: Origin = Field(...)
-    measurement_id: str = Field(...)
+    internalReference: str = Field(...)
     fail: Optional[bool]
     message: Optional[str]
     rating: Optional[int]
@@ -187,7 +227,7 @@ class Measurement(BaseModel):
     temperature: Temperature  # = Field(...)
     pending: bool  # = True
     #processing: Optional[bool] TODO: in later update should also keep track on tah and need to update this
-    fom_data: Optional[FomData]  # = []
+    fom_data: List[Optional[FomData]]  # = []
     kind: Origin
     # TODO: if pending True raw and fom may not be set!
 
