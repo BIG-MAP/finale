@@ -1,13 +1,11 @@
-import numpy as np
 import os,sys
 rootp = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.join(rootp, 'db'))
-
 from app.db import schemas_pydantic
 
 #values
 reset: bool = True
-db_file: str = f'testSession_{np.random.randint(low=0, high=int(10**4))}.db'
+db_file: str = f'session_myTest16.db'
 MAX_D = 7
 host = "localhost"#"stein.hiu-batteries.de"#
 port = 13371#13378#49157

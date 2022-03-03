@@ -37,7 +37,6 @@ while True:
         if request_meas.kind.origin == "experiment":
             print("Starting an experiment...")
             fom_value = do_experiment(request_meas)
-            print("fom_value:", fom_value)
 
             for key, val in fom_value.items():
                 if key != "sampleName" and key != "quality":
@@ -56,8 +55,6 @@ while True:
                                                                     pending=False,
                                                                     fom_data=fom,
                                                                     kind=schemas_pydantic.Origin(origin='experiment'))
-
-                            print(posted_meas)
 
                             ans_ = requests.post(f"http://{config.host}:{config.port}/api/broker/post/measurement",
                                                 data=posted_meas.json(),params={'request_id':request_id},headers=auth_header).json()

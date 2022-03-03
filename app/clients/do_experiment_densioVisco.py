@@ -7,6 +7,7 @@ import requests
 import numpy as np
 from db import schemas_pydantic
 
+
 def do_experiment_densioVisco(measurement: schemas_pydantic.Measurement):
     #print(measurement)
     #print(measurement.formulation)
