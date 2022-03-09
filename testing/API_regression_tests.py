@@ -18,6 +18,8 @@ from experiments.Hackathon import config_Hackathon
 usr = "helge"
 pw = "1234"
 
+# TODO: Adjust measurements according to new schemas once the new schemas are operable.
+
 ##################################################################################################
 #                                          General tests                                         #
 ##################################################################################################
@@ -79,7 +81,9 @@ def test_get_all_chemicals():
 
 measurementsDict = {"singleFOMmeasurement": {"id_request": "0", "id_measurement": "0"},
                     "duplicateSingleFOMmeasurement": {"id_request": "0", "id_measurement": "0"},
-                    "multiFOMmeasurement": {"id_request": "0", "id_measurement": []}}
+                    "multiFOMmeasurement": {"id_request": "0", "id_measurement": []},
+                    }#"twoFOMmeasurement":  {"id_request": "0", "id_measurement": "0"},
+                    #"failedFOMmeasurement":  {"id_request": "0", "id_measurement": "0"}}
 
 
 
@@ -389,10 +393,218 @@ def test_multiFOM_all_fom():
         assert measurementsDict["multiFOMmeasurement"]["id_measurement"][i] in res.json().keys()
         assert res.json()[measurementsDict["multiFOMmeasurement"]["id_measurement"][i]]["fom_data"] == dict(dict_measurementResults[i+1].fom_data)
 
-'''
-# Test at end: 
+
+
+
+
+
+
+# '''----------------------------------------------------------
 # Test measurement lifecycle with failed measurement/experiment (should work in future)
-# Test measurement lifecycle with two FOM’s posted at once (should work in future?) '''
+# -------------------------------------------------------------'''
+
+# ''' Dummy FOM '''
+# fom = "Density"
+
+# ''' Dummy origin '''
+# orig = "experiment"
+
+# ''' Dummy measurement '''
+# failedFOMmeas = schemas_pydantic.Measurement(
+#         formulation = schemas_pydantic.Formulation(compounds=[config.LiPF6_EC_EMC, config.LiPF6_EC_DMC], ratio=[0.4, 0.6], ratio_method='volumetric'),
+#         temperature = schemas_pydantic.Temperature(value=293.15, unit='K'),
+#         pending = True,
+#         kind = schemas_pydantic.Origin(origin=orig, what=fom))
+
+# ''' Dummy result '''
+# units = {"Density": "g/cm**3", "Viscosity": "mPa*s"}
+# post_failedFOMmeas = schemas_pydantic.Measurement(
+#         formulation = failedFOMmeas.formulation,
+#         temperature = failedFOMmeas.temperature,
+#         pending = False,
+#         fom_data = schemas_pydantic.FomData(value = [],
+#             unit = units[failedFOMmeas.kind.what],
+#             origin = failedFOMmeas.kind,
+#             internalReference = "543219876",
+#             name = failedFOMmeas.kind.what,
+#             fail = True,
+#             message = "This measurement failed.",
+#             rating = "5"),
+#         kind = failedFOMmeas.kind)
+
+# ## Get pending measurement requests - 1
+# def test_failedFOM_get_pending1():
+# # - post request
+#     res = requests.get(f"http://{config.host}:{config.port}/api/broker/get/pending", params={'fom_name':fom}, headers=auth_header)
+# # - verify response OK
+#     assert res.status_code == 200
+
+# ## Post measurement requests
+# def test_failedFOM_request_meas():
+# # - post request (one or more of simulation / experiment)
+#     res = requests.post(f"http://{config.host}:{config.port}/api/broker/request/measurement", data=failedFOMmeas.json(), headers=auth_header)
+# # - verify response OK
+#     assert res.status_code == 200
+# # - verify response contains request ID (to be verified?) with associated time stamp <- test for timestamp pending
+#     measurementsDict["failedFOMmeasurement"]["id_request"] = res.json()["id"]
+#     assert res.json()["id"] != None
+
+# ## Get pending measurement requests – 2
+# def test_failedFOM_get_pending2():
+# # - post request for all pending measurements
+#     res = requests.get(f"http://{config.host}:{config.port}/api/broker/get/pending", params={'fom_name':fom}, headers=auth_header)
+# # - verify response OK
+#     assert res.status_code == 200
+# # - verify response contains request ID with the same parameters as requested above and with associated time stamp <- test for timestamp pending
+#     assert measurementsDict["failedFOMmeasurement"]["id_request"] in res.json().keys()
+#     assert res.json()[measurementsDict["failedFOMmeasurement"]["id_request"]]["formulation"] == dict(failedFOMmeas.formulation)
+#     assert res.json()[measurementsDict["failedFOMmeasurement"]["id_request"]]["temperature"] == dict(failedFOMmeas.temperature)
+#     assert res.json()[measurementsDict["failedFOMmeasurement"]["id_request"]]["pending"] == failedFOMmeas.pending
+#     assert res.json()[measurementsDict["failedFOMmeasurement"]["id_request"]]["kind"] == dict(failedFOMmeas.kind)
+
+# ## Post measurement results
+# def test_failedFOM_post_measurement():
+# # - post result with request ID and user-provided measurement_ID
+#     res = requests.post(f"http://{config.host}:{config.port}/api/broker/post/measurement",
+#         data=post_failedFOMmeas.json(),params={'request_id':measurementsDict["failedFOMmeasurement"]["id_request"]},headers=auth_header)
+# # - verify response OK
+#     assert res.status_code == 200
+# # - verify response contains server-provided ID_measurement with associated time stamp <- test for timestamp pending
+#     assert res.json()["id_measurement"] != None
+#     measurementsDict["failedFOMmeasurement"]["id_measurement"] = res.json()["id_measurement"]
+#     assert res.json()["id_request"] == measurementsDict["failedFOMmeasurement"]["id_request"] #<- additional test for request ID
+
+# ## Get pending measurement requests - 3
+# def test_failedFOM_get_pending3():
+# # - post request for all pending measurements
+#     res = requests.get(f"http://{config.host}:{config.port}/api/broker/get/pending", params={'fom_name':fom}, headers=auth_header)
+# # - verify response OK
+#     assert res.status_code == 200
+# # - verify response does NOT contain request ID
+#     assert measurementsDict["failedFOMmeasurement"]["id_request"] not in res.json().keys()
+
+# ## Get all FOM results
+# def test_failedFOM_all_fom():
+# # - post request for all FOMs
+#     res = requests.get(f"http://{config.host}:{config.port}/api/broker/get/all_fom", params={'fom_name': fom},headers=auth_header)
+# # - verify response OK
+#     assert res.status_code == 200
+# # - verify response contains server-provided ID_measurement with all FOM’s posted previously and time stamp(s) <- test for timestamp pending
+#     assert measurementsDict["failedFOMmeasurement"]["id_measurement"] in res.json().keys()
+#     assert res.json()[measurementsDict["failedFOMmeasurement"]["id_measurement"]]["fom_data"] == dict(post_failedFOMmeas.fom_data)
+
+
+
+
+
+# '''----------------------------------------------------------
+# Test measurement lifecycle with two FOM’s posted at once (should work in future?)
+# -------------------------------------------------------------'''
+
+# ''' Dummy FOM '''
+# fom = "Density"
+
+# ''' Dummy origin '''
+# orig = "experiment"
+
+# ''' Dummy measurement '''
+# twoFOMmeas = schemas_pydantic.Measurement(
+#         formulation = schemas_pydantic.Formulation(compounds=[config.LiPF6_EC_EMC, config.LiPF6_EC_DMC], ratio=[0.4, 0.6], ratio_method='volumetric'),
+#         temperature = schemas_pydantic.Temperature(value=293.15, unit='K'),
+#         pending = True,
+#         kind = schemas_pydantic.Origin(origin=orig, what=fom))
+
+# ''' Dummy result '''
+# units = {"Density": "g/cm**3", "Viscosity": "mPa*s"}
+# post_failedFOMmeas = schemas_pydantic.Measurement(
+#         formulation = failedFOMmeas.formulation,
+#         temperature = failedFOMmeas.temperature,
+#         pending = False,
+#         fom_data = schemas_pydantic.FomData(value = [21.0 ,42.0],
+#             unit = units[failedFOMmeas.kind.what],
+#             origin = failedFOMmeas.kind,
+#             internalReference = "543219876",
+#             name = failedFOMmeas.kind.what,
+#             fail = False,
+#             message = "This measurement succeeded.",
+#             rating = "5"),
+#         kind = failedFOMmeas.kind)
+
+# ## Get pending measurement requests - 1
+# def test_twoFOM_get_pending1():
+# # - post request
+#     res = requests.get(f"http://{config.host}:{config.port}/api/broker/get/pending", params={'fom_name':fom}, headers=auth_header)
+# # - verify response OK
+#     assert res.status_code == 200
+
+# ## Post measurement requests
+# def test_twoFOM_request_meas():
+# # - post request (one or more of simulation / experiment)
+#     res = requests.post(f"http://{config.host}:{config.port}/api/broker/request/measurement", data=twoFOMmeas.json(), headers=auth_header)
+# # - verify response OK
+#     assert res.status_code == 200
+# # - verify response contains request ID (to be verified?) with associated time stamp <- test for timestamp pending
+#     measurementsDict["twoFOMmeasurement"]["id_request"] = res.json()["id"]
+#     assert res.json()["id"] != None
+
+# ## Get pending measurement requests – 2
+# def test_twoFOM_get_pending2():
+# # - post request for all pending measurements
+#     res = requests.get(f"http://{config.host}:{config.port}/api/broker/get/pending", params={'fom_name':fom}, headers=auth_header)
+# # - verify response OK
+#     assert res.status_code == 200
+# # - verify response contains request ID with the same parameters as requested above and with associated time stamp <- test for timestamp pending
+#     assert measurementsDict["twoFOMmeasurement"]["id_request"] in res.json().keys()
+#     assert res.json()[measurementsDict["twoFOMmeasurement"]["id_request"]]["formulation"] == dict(twoFOMmeas.formulation)
+#     assert res.json()[measurementsDict["twoFOMmeasurement"]["id_request"]]["temperature"] == dict(twoFOMmeas.temperature)
+#     assert res.json()[measurementsDict["twoFOMmeasurement"]["id_request"]]["pending"] == twoFOMmeas.pending
+#     assert res.json()[measurementsDict["twoFOMmeasurement"]["id_request"]]["kind"] == dict(twoFOMmeas.kind)
+
+# ## Post measurement results
+# def test_twoFOM_post_measurement():
+# # - post result with request ID and user-provided measurement_ID
+#     res = requests.post(f"http://{config.host}:{config.port}/api/broker/post/measurement",
+#         data=post_twoFOMmeas.json(),params={'request_id':measurementsDict["twoFOMmeasurement"]["id_request"]},headers=auth_header)
+# # - verify response OK
+#     assert res.status_code == 200
+# # - verify response contains server-provided ID_measurement with associated time stamp <- test for timestamp pending
+#     assert res.json()["id_measurement"] != None
+#     measurementsDict["twoFOMmeasurement"]["id_measurement"] = res.json()["id_measurement"]
+#     assert res.json()["id_request"] == measurementsDict["twoFOMmeasurement"]["id_request"] #<- additional test for request ID
+
+# ## Get pending measurement requests - 3
+# def test_twoFOM_get_pending3():
+# # - post request for all pending measurements
+#     res = requests.get(f"http://{config.host}:{config.port}/api/broker/get/pending", params={'fom_name':fom}, headers=auth_header)
+# # - verify response OK
+#     assert res.status_code == 200
+# # - verify response does NOT contain request ID
+#     assert measurementsDict["twoFOMmeasurement"]["id_request"] not in res.json().keys()
+
+# ## Get all FOM results
+# def test_twoFOM_all_fom():
+# # - post request for all FOMs
+#     res = requests.get(f"http://{config.host}:{config.port}/api/broker/get/all_fom", params={'fom_name': fom},headers=auth_header)
+# # - verify response OK
+#     assert res.status_code == 200
+# # - verify response contains server-provided ID_measurement with all FOM’s posted previously and time stamp(s) <- test for timestamp pending
+#     assert measurementsDict["twoFOMmeasurement"]["id_measurement"] in res.json().keys()
+#     assert res.json()[measurementsDict["twoFOMmeasurement"]["id_measurement"]]["fom_data"] == dict(post_twoFOMmeas.fom_data)
+
+
+
+
+
+
+
+
+
+
+
+
+'''----------------------------------------------------------
+Final test to check, if all measurements are in the list
+-------------------------------------------------------------'''
 
 ## Get list of completed measurements (final test)
 def test_all_fom2():
