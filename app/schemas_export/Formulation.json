@@ -1,6 +1,6 @@
 {
   "title": "Formulation",
-  "description": "A Formulation is a ratio mix of different compounds\n\nExample:\nA = Compound(chemicals=[Chemical(smiles='COC(=O)OC',name='DMC',reference='DMC_ELyte_2020'),\n                              Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F',name='LiPF6',reference='LiPF6_Elyte_2020')],\n                   amounts=[Amount(value=0.5,unit='mol'),Amount(value=0.1,unit='mol')],\n                   name='LiPF6_salt_in_DMC_5:1')\nB = Compound(chemicals=[Chemical(smiles='CC1COC(=O)O1',name='PC',reference='PC_ELyte_2020'),\n                              Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F',name='LiPF6',reference='LiPF6_Elyte_2020')],\n                   amounts=[Amount(value=0.5,unit='mol'),Amount(value=0.1,unit='mol')],\n                   name='LiPF6_salt_in_PC_5:1')\nform_1 = Formulation(compounds=[A,B],ratio=[3,1],ratio_method='volumetric')",
+  "description": "A Formulation is a ratio mix of different compounds\n\nExample:\nform = schemas_pydantic.Formulation(chemicals=[schemas_pydantic.Chemical(smiles='COC(=O)OC', name='DMC', reference='DMC_Elyte_2020'),\n                                            schemas_pydantic.Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F', name='LiPF6', reference='LiPF6_Elyte_2020')],\namounts=[schemas_pydantic.Amount(value=1.0, unit='mol'),schemas_pydantic.Amount(value=0.1, unit='mol')],\nratio_method='molal')",
   "type": "object",
   "properties": {
     "chemicals": {
@@ -29,7 +29,7 @@
   "definitions": {
     "Chemical": {
       "title": "Chemical",
-      "description": "This defines a chemical\n\nEvery chemical needs a SMILES and a name like DMC => COC(=O)OC\nA reference is an optional thing like \"Vile 211003-Vial2-DMC\"\nExample:\n    Chemical(smiles='COC(=O)OC',name='DMC',reference='DMC_Elyte_2020')",
+      "description": "This defines a chemical\n\nEvery chemical needs a SMILES and a name like DMC => COC(=O)OC\nA reference is an optional thing like \"Vile 211003-Vial2-DMC\"\nExample:\ndmc = schemas_pydantic.Chemical(smiles='COC(=O)OC', name='DMC', reference='DMC_Elyte_2020')",
       "type": "object",
       "properties": {
         "smiles": {

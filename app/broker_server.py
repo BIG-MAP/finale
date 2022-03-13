@@ -242,10 +242,12 @@ def post_measurement(measurement: schemas_pydantic.Measurement, request_id: str 
     if measurement.pending:
         return {"message": "posted measurement that is pending", "id": -1}
     # check that there is a fom
-    if measurement.fom_data == None:
+    if len(measurement.fom_data) == 0:
         return {"message": "posted measurement that has no fom data", "id": -1}
-    if measurement.fom_data.value == nan:
-        raise ValueError
+    #check that fom has no nan
+    for fom in measurement.fom_data:
+        if sum(fom.values) == nan:
+            raise ValueError
 
     db_ = db.dbinteraction()
     id_ = db_.add_measurement(measurement)
@@ -275,8 +277,9 @@ def request_meas(measurement: schemas_pydantic.Measurement, token: str = Depends
     if not measurement.pending:
         return {"message": "posted measurement as request that is not pending", "id": -1}
     # check that there is no fom
-    if not measurement.fom_data == None:
-        return {"message": "posted measurement as request that has fom data", "id": -1}
+    for fom_data in measurement.fom_data:
+        if not fom_data.fom_data == None:
+            return {"message": "posted measurement as request that has fom data", "id": -1}
     if measurement.kind.what == None:
         return {"message": "Not specified what to measure", "id": -1}
     db_ = db.dbinteraction()

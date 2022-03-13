@@ -1,6 +1,6 @@
 {
   "title": "FomData",
-  "description": "This is a wrapper for figure of merit (FOM) i.e. scalar data\n\nExample:\n    fom_1 = FomData(value=3,unit=\"g/cm**3\",origin=\"experiment\")",
+  "description": "This is a wrapper for figure of merit (FOM) i.e. scalar data\n\nExample:\ndata = schemas_pydantic.FomData(values=[1.23],unit='g/cm**2',dim=1,\n                                name='density',origin=orig,internalReference='aTest',\n                                fail=False, message='My Message', rating=1)\n\ndata_nd = schemas_pydantic.FomData(values=[1.23,234,12,13,56,26],unit='g/cm**2',dim=6,\n                                name='vectorial',origin=orig,internalReference='aTest',\n                                fail=False, message='My Message', rating=1)",
   "type": "object",
   "properties": {
     "values": {

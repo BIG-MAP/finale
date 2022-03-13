@@ -148,15 +148,16 @@ class dbinteraction:
 
     def add_formulation(self, formulation: schemas_pydantic.Formulation):
         #add compounds where nessesary
-        compound_ids,compound_i = [],0
-        for compound in formulation.compounds:
-            compound_ids.append(self.add_compound(compound))
-            compound_i += 1
+        chemical_ids,chemical_i = [],0
+        for chemical in formulation.chemicals:
+            chemical_ids.append(self.add_chemical(chemical))
+            chemical_i += 1
+
         #add padding ids
-        for i in [i for i in range(compound_i, config.MAX_D)]:
-            compound_ids.append('-1')
+        for i in [i for i in range(chemical_i, config.MAX_D)]:
+            chemical_ids.append('-1')
         ratios = [float(r) for r in formulation.ratio]
-        for i in [i for i in range(compound_i, config.MAX_D)]:
+        for i in [i for i in range(chemical_i, config.MAX_D)]:
             ratios.append(0)
 
         id_ = uuid4().hex
@@ -183,7 +184,7 @@ class dbinteraction:
             fom_id_ = self.add_fom(fom_data,measurement_id_=id_me)
         except AttributeError:
             fom_id_ = -1
-        formulation_id = self.add_formulation(measurement.formulation)
+        formulation_id = 0 #self.add_formulation(measurement.formulation)
         temperature_value = measurement.temperature.value# = Field(...)
         temperature_unit = measurement.temperature.unit# = Field(...)
         pending = measurement.pending
