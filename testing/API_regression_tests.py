@@ -28,8 +28,6 @@ pw = "1234"
 ## Basic authentication (DTU, KIT, 3DS to look up username / password) 
 def test_authenticate_user():
 # - post username + password
-    auth_header = helpfuncs.authenticate(usr, pw)
-    print(auth_header)
     res = requests.post(f"http://{config.host}:{config.port}/token",
                                    data={"username": usr, "password": pw, "grant_type": "password"},
                                    headers={"content-type": "application/x-www-form-urlencoded"})
