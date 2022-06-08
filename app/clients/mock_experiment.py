@@ -15,6 +15,8 @@ import requests
 import time
 import pandas as pd
 
+units = {"density": "g/cm**3", "viscosity": "mPa*s"}
+
 while True:
     time.sleep(config.sleeptime)
     print("Logging in...")
