@@ -10,8 +10,8 @@ from scipy.optimize import minimize
 import numpy as np
 
 import requests
-#import config   # <- use this line of code to make it work with mock_experiment
-from config import config #<- use this line of code to make it work with API_regression_tests
+import config   # <- use this line of code to make it work with mock_experiment
+# from config import config #<- use this line of code to make it work with API_regression_tests
 from app.db import schemas_pydantic
 
 from passlib.context import CryptContext

@@ -4,7 +4,7 @@ sys.path.append("\\".join([str(os.path.dirname(os.path.dirname(os.path.realpath(
 sys.path.append("\\".join([str(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))), "app\\clients"]))
 sys.path.append("\\".join([str(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))), "app\\config"]))
 sys.path.append("\\".join([str(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))), "db"]))
-sys.path.append("C:\\Users\\Public\\Documents\\ASAB\\ASAB")
+sys.path.append(r"C:\Users\Public\Documents\ASAB\ASAB_experiments\experiments\Hackathon_V1")
 import requests
 from db import schemas_pydantic
 
@@ -12,7 +12,7 @@ from db import schemas_pydantic
 from config import config
 from app.broker_server import app
 from app.clients import helperfcns_externalDoExperiment as helpfuncs
-from experiments.Hackathon import config_Hackathon
+from Hackathon_V1 import config_Hackathon
 
 
 usr = "helge"

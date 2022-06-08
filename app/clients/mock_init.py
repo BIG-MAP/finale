@@ -55,12 +55,12 @@ ans_ = requests.post(f"http://{config.host}:{config.port}/api/broker/request/mea
                     data=meas.json(),headers=auth_header).json()
 ids.append(ans_)
 
-# # LiPF6 in EC/DMC
-# form = schemas_pydantic.Formulation(compounds=[config.LiPF6_EC_DMC], ratio=[1], ratio_method='volumetric')
-# meas = schemas_pydantic.Measurement(formulation=form, temperature=temp, pending=True, kind=orig)
-# ans_ = requests.post(f"http://{config.host}:{config.port}/api/broker/request/measurement",
-#                     data=meas.json(),headers=auth_header).json()
-# ids.append(ans_)
+# LiPF6 in EC/DMC
+form = schemas_pydantic.Formulation(compounds=[config.LiPF6_EC_DMC], ratio=[1], ratio_method='volumetric')
+meas = schemas_pydantic.Measurement(formulation=form, temperature=temp, pending=True, kind=orig)
+ans_ = requests.post(f"http://{config.host}:{config.port}/api/broker/request/measurement",
+                    data=meas.json(),headers=auth_header).json()
+ids.append(ans_)
 
 # EC/EMC
 form = schemas_pydantic.Formulation(compounds=[config.EC_EMC], ratio=[1], ratio_method='volumetric')
