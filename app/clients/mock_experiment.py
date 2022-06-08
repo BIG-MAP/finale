@@ -9,9 +9,11 @@ print(rootp)
 
 import config
 from app.db import schemas_pydantic
-from helperfcns import do_experiment,authenticate
+from helperfcns import authenticate
+from helperfcns_externalDoExperiment import do_experiment
 import requests
 import time
+import pandas as pd
 
 while True:
     time.sleep(config.sleeptime)
@@ -33,11 +35,22 @@ while True:
             print("Starting an experiment...")
             fom_value = do_experiment(request_meas)
 
-            fom = schemas_pydantic.FomData(value=fom_value,
-                                           unit="g/cm**3",
-                                           origin=schemas_pydantic.Origin(origin='experiment'),
-                                           measurement_id='123',
-                                           name='Density')
+            for key, val in fom_value.items():
+                if key != "sampleName" and key != "quality":
+                    fom_data = pd.Series(fom_value[key])
+                        fom = schemas_pydantic.FomData(value=fom_data,
+                                                    unit=units[key],
+                                                    origin=schemas_pydantic.Origin(origin='experiment'),
+                                                    measurement_id=fom_value["sampleName"],
+                                                    name=str(key.capitalize()))
+
+                            #this adds the data without much hassle but with type checking
+
+                            posted_meas = schemas_pydantic.Measurement(formulation=request_meas.formulation,
+                                                                    temperature=request_meas.temperature,
+                                                                    pending=False,
+                                                                    fom_data=fom,
+                                                                    kind=schemas_pydantic.Origin(origin='experiment'))
 
             #this adds the data without much hassle but with type checking
 
