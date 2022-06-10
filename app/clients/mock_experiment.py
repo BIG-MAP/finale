@@ -4,7 +4,7 @@ rootp = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.join(rootp, 'config'))
 sys.path.append(os.path.join(rootp, 'db'))
 sys.path.append(os.path.join(rootp, 'clients'))
-
+sys.path.append(os.path.dirname(rootp))
 print(rootp)
 
 import config
@@ -20,22 +20,23 @@ units = {"density": "g/cm**3", "viscosity": "mPa*s"}
 while True:
     time.sleep(config.sleeptime)
     print("Logging in...")
-    auth_header = authenticate("helge", "1234")
+    auth_header = authenticate("kit", "KIT_huipuischui_23")
 
     print("Looking for things to do...")
     #someone then asks what measurements are pending
     pending = requests.get(f"http://{config.host}:{config.port}/api/broker/get/pending",
-                           params={'fom_name':'Density'},headers=auth_header).json()
+                           params={'fom_name':'density'},headers=auth_header).json()
 
     #someone does an experiment
     for request_id,request_meas_ in pending.items():
+        print(request_meas_)
         #convert to proper measurement
         request_meas = schemas_pydantic.Measurement(**request_meas_)
         #do a fancy experiment
         # replace the following line with your experiment for instance
         if request_meas.kind.origin == "experiment":
             print("Starting an experiment...")
-            fom_value = do_experiment(request_meas)
+            fom_value, mixrat= do_experiment(request_meas)
 
             for key, val in fom_value.items():
                 if key != "sampleName" and key != "quality":
@@ -44,7 +45,7 @@ while True:
                                                 unit=units[key],
                                                 origin=schemas_pydantic.Origin(origin='experiment'),
                                                 measurement_id=fom_value["sampleName"],
-                                                name=str(key.capitalize()))
+                                                name=str(key))
 
             #this adds the data without much hassle but with type checking
 
