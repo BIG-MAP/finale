@@ -207,8 +207,11 @@ async def all_fom(fom_name: schemas_pydantic.FomEnum,debug_mode=False, token: st
             print(r[-2])
             json_ = schemas_pydantic.Measurement.parse_raw(r[-2])
             if not json_.fom_data == None:
-                if json_.fom_data.name == fom_name:
-                    mlist[r[-1]] = json_
+                fom_names = []
+                for cand in json_.fom_data:
+                    if cand.name == fom_name:
+                    #if json_.fom_data.name == fom_name:
+                        mlist[r[-1]] = json_
         except ValueError:
             if debug_mode:
                 mlist[ri] = {'error with: ': r[-2]}
