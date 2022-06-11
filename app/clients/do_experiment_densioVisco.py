@@ -15,7 +15,7 @@ def do_experiment_densioVisco(measurement: schemas_pydantic.Measurement):
     print('mixratios', mixratios)
     #print(compounds, type(compounds), ratios, type(ratios))
     #print("mixRatioHelper:", mixingRatio, type(mixingRatio))
-    sampleName = str(int(np.random.random()*10**10)) #str(uuid4())#measurement.fom_data.measurement_id
+    sampleName = '6764730707'#str(int(np.random.random()*10**10)) #str(uuid4())#measurement.fom_data.measurement_id
     print("Sample name", sampleName)
     method = "Lovis-DMA_MultiMeasure_20" #TODO: Change when new method implemented.
     measurementtype = "densioVisco"

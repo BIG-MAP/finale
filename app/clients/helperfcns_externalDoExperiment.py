@@ -20,8 +20,8 @@ from do_experiment_densioVisco import do_experiment_densioVisco
 
 from random import random
 def do_experiment(measurement: schemas_pydantic.Measurement):
-    results = do_experiment_densioVisco(measurement)
-    return results
+    results, mixRatio = do_experiment_densioVisco(measurement)
+    return results, mixRatio
 
 
 def do_simulation(measurement: schemas_pydantic.Measurement):
