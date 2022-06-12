@@ -9,7 +9,7 @@ import schemas_pydantic
 
 dmc = schemas_pydantic.Chemical(smiles='COC(=O)OC', name='DMC', reference='DMC_Elyte_2020')
 
-with open(os.path.join(cwd,'./app/schemas_export/Chemical.json'), 'w') as f:
+with open(r'./app/schemas_export/Chemical.json', 'w') as f:
     f.write(schemas_pydantic.Chemical.schema_json(indent=2))
 
 

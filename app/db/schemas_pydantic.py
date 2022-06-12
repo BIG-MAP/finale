@@ -163,13 +163,7 @@ class Agent(BaseModel):
 
 
 class Formulation(BaseModel):
-    """A Formulation is a ratio mix of different compounds
-
-    Example:
-    form = schemas_pydantic.Formulation(chemicals=[schemas_pydantic.Chemical(smiles='COC(=O)OC', name='DMC', reference='DMC_Elyte_2020'),
-                                                schemas_pydantic.Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F', name='LiPF6', reference='LiPF6_Elyte_2020')],
-    amounts=[schemas_pydantic.Amount(value=1.0, unit='mol'),schemas_pydantic.Amount(value=0.1, unit='mol')],
-    ratio_method='molal')
+    """A Formulation is a ratio mix of different chemicals
     """
     # A formulation can consist
     chemicals: List[Chemical] = Field(...)
