@@ -1,6 +1,7 @@
 import sys
 sys.path.extend(['./app/db'])
-
+import os
+cwd = os.getcwd()
 import schemas_pydantic
 
 #agent = schemas_pydantic.Agent(online=True, kind='Simulation',)
@@ -8,24 +9,7 @@ import schemas_pydantic
 
 dmc = schemas_pydantic.Chemical(smiles='COC(=O)OC', name='DMC', reference='DMC_Elyte_2020')
 
-with open('./app/schemas_export/Chemical.json', 'w') as f:
-    f.write(schemas_pydantic.Chemical.schema_json(indent=2))
-
-dmc_compound = schemas_pydantic.Compound(chemicals=[
-    schemas_pydantic.Chemical(smiles='COC(=O)OC', name='DMC', reference='DMC_Elyte_2020')],
-    amounts=[schemas_pydantic.Amount(value=1.0, unit='mol')],
-    name='DMC')
-
-with open('./app/schemas_export/Compound.json', 'w') as f:
-    f.write(schemas_pydantic.Chemical.schema_json(indent=2))
-
-mixed_compound = schemas_pydantic.Compound(chemicals=[
-    schemas_pydantic.Chemical(smiles='COC(=O)OC', name='DMC', reference='DMC_Elyte_2020'),
-    schemas_pydantic.Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F', name='LiPF6', reference='LiPF6_Elyte_2020')],
-    amounts=[schemas_pydantic.Amount(value=1.0, unit='mol'), schemas_pydantic.Amount(value=0.2, unit='mol')],
-    name='LDMC_LIPF6')
-
-with open('./app/schemas_export/Mixed_Compound.json', 'w') as f:
+with open(os.path.join(cwd,'./app/schemas_export/Chemical.json'), 'w') as f:
     f.write(schemas_pydantic.Chemical.schema_json(indent=2))
 
 
