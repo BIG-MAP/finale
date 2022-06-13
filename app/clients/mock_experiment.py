@@ -36,7 +36,7 @@ while True:
         # replace the following line with your experiment for instance
         if request_meas.kind.origin == "experiment":
             print("Starting an experiment...")
-            fom_value, mixrat= do_experiment(request_meas)
+            fom_value, mixrat, actualMix= do_experiment(request_meas)
             nan = np.nan
             fom_value = eval(fom_value)
             # TODO: work with mixrat and include deviation from target mix
@@ -47,23 +47,25 @@ while True:
                     print(key,val)
                     fom_data = fom_value[key]
                     fom_values_notNaN = list(pd.Series(fom_data['values']).dropna(inplace=False))
-                    print(fom_values_notNaN, type(fom_values_notNaN))
                     if fom_values_notNaN != []:
                         fom = schemas_pydantic.FomData(values=fom_values_notNaN,
                                                     dim=len(fom_data['values']),
                                                     unit=units[key],
                                                     origin=schemas_pydantic.Origin(origin='experiment'),
                                                     internalReference=fom_value["sampleName"],
-                                                    message=fom_value[key]['quality'],
-                                                    name=str(key))
+                                                    message=str(mixrat),
+                                                    name=str(key),
+                                                    rating=fom_value[key]['quality'])
                     else:
                         fom = schemas_pydantic.FomData(values=list(np.zeros(len(fom_data['values']))),
                                                     dim=len(fom_data['values']),
                                                     unit=units[key],
                                                     origin=schemas_pydantic.Origin(origin='experiment'),
                                                     internalReference=fom_value["sampleName"],
-                                                    message=fom_value[key]['quality'],
-                                                    name=str(key))
+                                                    message=str(mixrat),
+                                                    name=str(key),
+                                                    fail=True,
+                                                    rating=0.0)
                     Foms.append(fom)
 
             #this adds the data without much hassle but with type checking

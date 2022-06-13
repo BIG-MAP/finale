@@ -30,12 +30,18 @@ LiPF6_EC_DMC = schemas_pydantic.Compound(chemicals=[
     schemas_pydantic.Amount(value=0.07, unit='mol.-%')],
     name='LiPF6_salt_in_EC_DMC_1:1')
 
-EC_DMC = schemas_pydantic.Compound(chemicals=[
-    schemas_pydantic.Chemical(smiles='C1COC(=O)O1', name='EC', reference='EC_Elyte_2020'),
+# EC_DMC = schemas_pydantic.Compound(chemicals=[
+#     schemas_pydantic.Chemical(smiles='C1COC(=O)O1', name='EC', reference='EC_Elyte_2020'),
+#     schemas_pydantic.Chemical(smiles='COC(=O)OC', name='DMC', reference='DMC_Elyte_2020')],
+#     amounts=[schemas_pydantic.Amount(value=0.51, unit='mol.-%'),
+#     schemas_pydantic.Amount(value=0.49, unit='mol.-%')],
+#     name='EC_DMC_1:1')
+
+
+DMC = schemas_pydantic.Compound(chemicals=[
     schemas_pydantic.Chemical(smiles='COC(=O)OC', name='DMC', reference='DMC_Elyte_2020')],
-    amounts=[schemas_pydantic.Amount(value=0.51, unit='mol.-%'),
-    schemas_pydantic.Amount(value=0.49, unit='mol.-%')],
-    name='EC_DMC_1:1')
+    amounts=[schemas_pydantic.Amount(value=1., unit='mol.-%')],
+    name='DMC')
 
 LiPF6_EC_EMC = schemas_pydantic.Compound(chemicals=[
     schemas_pydantic.Chemical(smiles='C1COC(=O)O1', name='EC', reference='EC_Elyte_2020'),
