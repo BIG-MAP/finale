@@ -29,4 +29,6 @@ def do_experiment_densioVisco(measurement: schemas_pydantic.Measurement):
     _ = requests.get("http://localhost:13373/action/densioVisco_action/measure", params={"sampleName": sampleName, "method": method}).json()
     print(f"Waiting for measurement of sample {sampleName} to finish.")
     results = requests.get("http://localhost:13373/action/densioVisco_action/retrieveData", params={"sampleName": sampleName, "method": method, "methodtype": "Measurement", "savePath": "Y:\\extractions"}).json()
+    print(f'Draining sample {sampleName} from {measurementtype}.')
+    _ = requests.get("http://localhost:13372/action/CetoniDevice_action/drainSample", params={"measurementtype": measurementtype, "pump": 'F0.0', 'repeats': 3}).json()
     return results, mixRatio, actualMix

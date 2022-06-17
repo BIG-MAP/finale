@@ -11,23 +11,32 @@ from app.db import schemas_pydantic
 import requests
 from app.clients import helperfcns
 
+import inspect
+
 auth_header = helperfcns.authenticate("kit", "KIT_huipuischui_23")
 
+## Add all the chemicals contained in the compounds to the server
+compoundList = [v for v in dict(inspect.getmembers(config)).values() if type(v)==schemas_pydantic.Compound]
+for compound in compoundList:
+    for chemical in compound.chemicals:
+        _ = requests.post(f"http://{config.host}:{config.port}/api/broker/post/chemical", data=chemical.json(), headers=auth_header).json()
 
 #for hamid a request
-# form = schemas_pydantic.Formulation(chemicals=[schemas_pydantic.Chemical(smiles='C1COC(=O)O1', name='EC', reference='EC_Elyte_2020'), schemas_pydantic.Chemical(smiles='COC(=O)OC', name='DMC', reference='DMC_Elyte_2020')], amounts=[{'value':0.7,'unit':'mol'}, {'value':0.3,'unit':'mol'}], ratio_method='molar')
+form = schemas_pydantic.Formulation(chemicals=[schemas_pydantic.Chemical(smiles='C1COC(=O)O1', name='EC', reference='EC_ref'), schemas_pydantic.Chemical(smiles='COC(=O)OC', name='DMC', reference='DMC_ref'), schemas_pydantic.Chemical(smiles='CCOC(=O)OC', name='EMC', reference='EMC_ref'), schemas_pydantic.Chemical(smiles='[Li+].F[P-](F)(F)(F)(F)F', name='LiPF6', reference='LiPF6_ref')], amounts=[{'value':0.264,'unit':'mol'}, {'value':0.404,'unit':'mol'}, {'value':0.307,'unit':'mol'}, {'value':0.025,'unit':'mol'}], ratio_method='molar')
+temp = schemas_pydantic.Temperature(value=293.15, unit='K')
+orig = schemas_pydantic.Origin(origin='experiment', what='density')
+meas = schemas_pydantic.Measurement(formulation=form, temperature=temp, pending=True, kind=orig, fom_data=[])
+print(meas.json())
+ans_ = requests.post(f"http://{config.host}:{config.port}/api/broker/request/measurement",
+                    data=meas.json(),headers=auth_header).json()
+
+# form = schemas_pydantic.Formulation(chemicals=[schemas_pydantic.Chemical(smiles='COC(=O)OC', name='DMC', reference='DMC_ref')], amounts=[{'value':1.,'unit':'mol'}], ratio_method='molar')
 # temp = schemas_pydantic.Temperature(value=293.15, unit='K')
 # orig = schemas_pydantic.Origin(origin='experiment', what='density')
 # meas = schemas_pydantic.Measurement(formulation=form, temperature=temp, pending=True, kind=orig, fom_data=[])
 # ans_ = requests.post(f"http://{config.host}:{config.port}/api/broker/request/measurement",
-#                     data=meas.json(),headers=auth_header).json()
-
-form = schemas_pydantic.Formulation(chemicals=[schemas_pydantic.Chemical(smiles='COC(=O)OC', name='DMC', reference='DMC_Elyte_2020')], amounts=[{'value':1.,'unit':'mol'}], ratio_method='molar')
-temp = schemas_pydantic.Temperature(value=293.15, unit='K')
-orig = schemas_pydantic.Origin(origin='experiment', what='density')
-meas = schemas_pydantic.Measurement(formulation=form, temperature=temp, pending=True, kind=orig, fom_data=[])
-ans_ = requests.post(f"http://{config.host}:{config.port}/api/broker/request/measurement",
-                    data=meas.json(),headers=auth_header).json()
+#                    data=meas.json(),headers=auth_header).json()
+# print(meas.json())
 
 # form = schemas_pydantic.Formulation(chemicals=[config.EC_DMC], ratio=[1], ratio_method='volumetric')
 # temp = schemas_pydantic.Temperature(value=293.15, unit='K')

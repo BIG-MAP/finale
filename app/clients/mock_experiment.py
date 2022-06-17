@@ -17,6 +17,7 @@ import pandas as pd
 import numpy as np
 
 units = {"density": "g/cm**3", "viscosity": "mPa*s"}
+SMILES = {'EC': 'C1COC(=O)O1', 'DMC': 'COC(=O)OC', 'LiPF6': '[Li+].F[P-](F)(F)(F)(F)F', 'EMC': 'CCOC(=O)OC'}
 
 while True:
     time.sleep(config.sleeptime)
@@ -39,7 +40,6 @@ while True:
             fom_value, mixrat, actualMix= do_experiment(request_meas)
             nan = np.nan
             fom_value = eval(fom_value)
-            # TODO: work with mixrat and include deviation from target mix
 
             Foms = []
             for key, val in fom_value.items():
@@ -51,30 +51,47 @@ while True:
                         fom = schemas_pydantic.FomData(values=fom_values_notNaN,
                                                     dim=len(fom_data['values']),
                                                     unit=units[key],
-                                                    origin=schemas_pydantic.Origin(origin='experiment'),
+                                                    origin=schemas_pydantic.Origin(origin='experiment', what=str(key)),
                                                     internalReference=fom_value["sampleName"],
-                                                    message=str(mixrat),
+                                                    message=f'volumetric: {str(mixrat)}, mole ratio: {str(actualMix)}',
                                                     name=str(key),
+                                                    fail=False,
                                                     rating=fom_value[key]['quality'])
                     else:
                         fom = schemas_pydantic.FomData(values=list(np.zeros(len(fom_data['values']))),
                                                     dim=len(fom_data['values']),
                                                     unit=units[key],
-                                                    origin=schemas_pydantic.Origin(origin='experiment'),
+                                                    origin=schemas_pydantic.Origin(origin='experiment', what=str(key)),
                                                     internalReference=fom_value["sampleName"],
-                                                    message=str(mixrat),
+                                                    message=f'volumetric: {str(mixrat)}, mole ratio: {str(actualMix)}',
                                                     name=str(key),
                                                     fail=True,
-                                                    rating=0.0)
+                                                    rating=fom_value[key]['quality'])
                     Foms.append(fom)
 
+            ## Assemble the actual formulation based on the actualMix results
+            # Get the chemicals in the actual mixture
+            chemicals = requests.get(f"http://{config.host}:{config.port}/api/broker/get/all_chemicals", headers=auth_header).json()
+            chemicalsList = []
+            for chemicalInfo in chemicals.values():
+                if actualMix[chemicalInfo['name']] > 0.0:
+                    chemical = schemas_pydantic.Chemical(smiles=chemicalInfo['smiles'], name=chemicalInfo['name'], reference=chemicalInfo['reference'])
+                    chemicalsList.append(chemical)
+
+            amounts = []
+            for rat in actualMix.values():
+                if rat > 0.0:
+                    amount = schemas_pydantic.Amount(value=rat, unit='mol')#.-%')
+                    amounts.append(amount)
+
+            actualFormulation = schemas_pydantic.Formulation(chemicals=chemicalsList,amounts=amounts, ratio_method='other')
             #this adds the data without much hassle but with type checking
 
-            posted_meas = schemas_pydantic.Measurement(formulation=request_meas.formulation,
+            posted_meas = schemas_pydantic.Measurement(formulation=actualFormulation,
                                                     temperature=request_meas.temperature,
                                                     pending=False,
                                                     fom_data=Foms,
-                                                    kind=schemas_pydantic.Origin(origin='experiment'))
+                                                    kind=schemas_pydantic.Origin(origin='experiment', what='vectorial'))
 
             ans_ = requests.post(f"http://{config.host}:{config.port}/api/broker/post/measurement",
                                 data=posted_meas.json(),params={'request_id':request_id},headers=auth_header).json()
