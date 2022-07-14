@@ -1,14 +1,14 @@
 import os,sys
 rootp = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.join(rootp, 'db'))
-from app.db import schemas_pydantic
+from db import schemas_pydantic
 
 #values
 reset: bool = True
 db_file: str = f'session_testing.db'
 MAX_D = 7
-host = 'polstein1.polis.uni-ulm.de'#'localhost' #"stein.hiu-batteries.de"
-port = 13371#49157
+host = '0.0.0.0'#'polstein1.polis.uni-ulm.de'#'localhost' #"stein.hiu-batteries.de"
+port = 13371 #49157
 
 SECRET_KEY = "dcf832f0ec6a80dc36afd95422f0bb1f1c964d916a8c0d29b127d3246e4c88a6"
 ALGORITHM = "HS256"

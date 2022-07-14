@@ -2,16 +2,16 @@ import os,sys
 rootp = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.join(rootp, 'config'))
 sys.path.append(os.path.join(rootp, 'db'))
-
+sys.path.append(os.path.join(sys.path[0], '..'))
 from sklearn.ensemble import RandomForestRegressor
-from app.clients import composition
+from clients import composition
 from tqdm import tqdm
 from scipy.optimize import minimize
 import numpy as np
 
 import requests
-import config
-from app.db import schemas_pydantic
+import config.config as config 
+from db import schemas_pydantic
 
 from passlib.context import CryptContext
 

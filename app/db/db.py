@@ -1,13 +1,11 @@
 import os,sys
 rootp = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-sys.path.append(os.path.join(rootp, 'config'))
 sys.path.append(os.path.join(rootp, 'db'))
+import config.config as config 
+import schemas_pydantic
 
 import sqlite3
 from uuid import uuid4
-import config
-import schemas_pydantic
-
 class dbinteraction:
     def __init__(self):
         print(config.db_file)

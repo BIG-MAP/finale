@@ -1,20 +1,19 @@
 import os,sys
 rootp = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-#sys.path.append(os.path.join(rootp, 'config'))
-#sys.path.append(os.path.join(rootp, 'db'))
-sys.path.append('/code/./app/config')
-sys.path.append('/code/./app/db')
+sys.path.insert(0,'..')
 
 #ssl certificates make nothing but problems ...
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-
+from clients.bigmap_archive.bigmap_archive_uploader import archive_uploader
 
 import uvicorn
 from fastapi import FastAPI, Depends,HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
-import config, db, schemas_pydantic
-from users import users_db
+from db import db 
+import db.schemas_pydantic as schemas_pydantic
+import config.config as config 
+from db.users import users_db
 
 from uuid import UUID
 from datetime import datetime, timedelta
@@ -56,7 +55,7 @@ def authenticate_user(fake_db, username: str, password: str):
     return user
 
 
-def create_access_token(data: dict, expires_delta: timedelta | None = None):
+def create_access_token(data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
@@ -223,6 +222,7 @@ async def get_pending(fom_name: schemas_pydantic.FomEnum,token: str = Depends(oa
     # get all the measurement ids where pending is false
     db_ = db.dbinteraction()
     response = db_.query_X_by_Y('measurements', 'pending', True, return_all=True)
+
     row_meas = db_.cur.fetchall()  # expect this to be unique and return id
 
     db_.con.commit()
@@ -230,6 +230,7 @@ async def get_pending(fom_name: schemas_pydantic.FomEnum,token: str = Depends(oa
     # go through all responses to make a
     mlist = {}
     for r in response:
+        print(r)
         try:
             json_ = schemas_pydantic.Measurement.parse_raw(r[-2])
             if json_.kind.what == fom_name:
@@ -239,7 +240,9 @@ async def get_pending(fom_name: schemas_pydantic.FomEnum,token: str = Depends(oa
     return mlist
 
 @app.post("/api/broker/post/measurement")
-def post_measurement(measurement: schemas_pydantic.Measurement, request_id: str = None,token: str = Depends(oauth2_scheme)):
+def post_measurement(measurement: schemas_pydantic.Measurement, 
+    request_id: str = None,token: str = Depends(oauth2_scheme),
+    upload_to_bigmap_archive : bool = True, metadata = {}):
 
     # check if not pending
     if measurement.pending:
@@ -259,18 +262,37 @@ def post_measurement(measurement: schemas_pydantic.Measurement, request_id: str 
 
     if not request_id == None:
         db_ = db.dbinteraction()
-
         request_id = UUID(request_id).hex
         db_ = db.dbinteraction()
         sql_update_query = "update measurements set pending = False where id = ?"
         db_.cur.execute(sql_update_query, (request_id,))
-
+        if upload_to_bigmap_archive == False:
+        # Uploading the data in the folder into the bigmap archive 
+            arc_upl = archive_uploader()
+            try:
+                arc_upl.add_raw_data_to_archive(
+                    measurement = measurement,
+                    measurement_id = request_id,
+                    metadata = metadata, 
+                    name_experiment = 'measurement')
+            except Exception as e:
+                print("Error uploading data onto the archive. Error", str(e))
         db_.con.commit()
         db_.con.close()
         return {"message": "recieved pending measurement",
                 "id_measurement": id_,
                 "id_request":request_id}
-
+    if upload_to_bigmap_archive == False:
+        # Uploading the data in the folder into the bigmap archive 
+            arc_upl = archive_uploader()
+            try:
+                arc_upl.add_raw_data_to_archive(
+                    measurement = measurement,
+                    measurement_id = request_id,
+                    metadata = metadata, 
+                    name_experiment = 'measurement')
+            except Exception as e:
+                print("Error uploading data onto the archive. Error", str(e))
     return {"message": "recieved UNSOLICITED measurement", "id": id_}
 
 
@@ -312,6 +334,6 @@ def release():
 
 if __name__ == "__main__":
     db_ = db.dbinteraction()
-    db_.reset()
+    #db_.reset()
     uvicorn.run("broker_server:app", host=config.host, port=config.port)
 
