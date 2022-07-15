@@ -266,7 +266,7 @@ def post_measurement(measurement: schemas_pydantic.Measurement,
         db_ = db.dbinteraction()
         sql_update_query = "update measurements set pending = False where id = ?"
         db_.cur.execute(sql_update_query, (request_id,))
-        if upload_to_bigmap_archive == False:
+        if upload_to_bigmap_archive:
         # Uploading the data in the folder into the bigmap archive 
             arc_upl = archive_uploader()
             try:
@@ -282,7 +282,7 @@ def post_measurement(measurement: schemas_pydantic.Measurement,
         return {"message": "recieved pending measurement",
                 "id_measurement": id_,
                 "id_request":request_id}
-    if upload_to_bigmap_archive == False:
+    if upload_to_bigmap_archive:
         # Uploading the data in the folder into the bigmap archive 
             arc_upl = archive_uploader()
             try:

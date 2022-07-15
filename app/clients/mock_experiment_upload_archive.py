@@ -22,7 +22,7 @@ auth_header = authenticate("kit", "KIT_huipuischui_23")
 
 # The database grows larger, and larger over time 
 
-for k in range(5):
+for k in range(1):
     post_measurement = requests.post(
         f"http://{config.host}:{config.port}/api/broker/request/measurement",
         data=test_measurement.json(),
