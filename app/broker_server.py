@@ -242,7 +242,7 @@ async def get_pending(fom_name: schemas_pydantic.FomEnum,token: str = Depends(oa
 @app.post("/api/broker/post/measurement")
 def post_measurement(measurement: schemas_pydantic.Measurement, 
     request_id: str = None,token: str = Depends(oauth2_scheme),
-    upload_to_bigmap_archive : bool = True, metadata = {}):
+    metadata = {}):
 
     # check if not pending
     if measurement.pending:
@@ -259,7 +259,8 @@ def post_measurement(measurement: schemas_pydantic.Measurement,
     id_ = db_.add_measurement(measurement)
     db_.con.commit()
     db_.con.close()
-
+    upload_to_bigmap_archive = measurement.store_to_archive.upload
+    print(type(measurement), ' This is our measurement type')
     if not request_id == None:
         db_ = db.dbinteraction()
         request_id = UUID(request_id).hex

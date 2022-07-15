@@ -62,18 +62,9 @@ class FOM(BaseModel):
 
 
 class Chemical(BaseModel):
-    """This defines a chemical
-
-    Every chemical needs a SMILES and a name like DMC => COC(=O)OC
-    A reference is an optional thing like "Vile 211003-Vial2-DMC"
-    Example:
-    dmc = schemas_pydantic.Chemical(smiles='COC(=O)OC', name='DMC', reference='DMC_Elyte_2020')
-    """
     smiles: str  # = Field(...)
     name: str  # = Field(...)
     reference: str = ''
-    # TODO: add smiles check?
-    # TODO: add check if chemicals are allowed?
 
 
 class Temperature(BaseModel):
@@ -96,6 +87,24 @@ class Temperature(BaseModel):
             raise ValueError('Temperature unit must be K')
         return v.title()
 
+class ArchiveStorage(BaseModel):
+    '''
+    Class specifying if we want to store data in the BIG-MAP archive
+    upload : bool, if we want to upload the data to the BIG-MAP archive
+    append : bool, if we want to append the data onto an existing record in the archive
+    existingRecord : str, link to the existing record on the BIG-MAP archive
+    '''
+    upload : bool 
+    append : bool
+    existingRecord : str = ''
+    # @validator('existingRecord', 'append')
+    # def checkExistingRecord(cls, existingRecord, append):
+    #     if append:
+    #         if existingRecord == None:
+    #             raise ValueError('No record specified')
+    #         if existingRecord == '':
+    #             raise ValueError('No record specified')
+    #         return ''
 
 class Amount(BaseModel):
     """We store amount in units of mole TODO: Maybe recalc to mol?
@@ -211,6 +220,7 @@ class Measurement(BaseModel):
     #processing: Optional[bool] TODO: in later update should also keep track on tah and need to update this
     fom_data: List[Optional[FomData]]  # = []
     kind: Origin
+    store_to_archive : ArchiveStorage
     # TODO: if pending True raw and fom may not be set!
 
 

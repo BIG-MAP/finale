@@ -26,7 +26,7 @@ class archive_uploader:
     def __init__(self):
         self.token = config['access_token']
         self.url = config['web_archive_url']
-
+    
     def upload_files_to_archive(self, 
         links_filename = 'records_links.json',
         records_path_links = '/Users/paolovincenzofreieslebendeblasio/finale/app',
@@ -111,10 +111,11 @@ class archive_uploader:
             else:
                 print('There is an exception: ', e)
                 return "An error occurred creating a temporary storage for files, make sure only uploading from an account once"
-        
+        print(type(Measurement), ' THIS IS OUR MEASUREMENT TYPE')
         data_temp_filename = name_experiment + '.json'
         with open(os.path.join(temp_data_path, data_temp_filename), 'w') as f:
             data = measurement.json()
+            print(type(data), ' THIS IS OUR DATATYPE')
             json.dump(data, f)
         # Save filesaving links into a json with the measurement id as a name 
         try:

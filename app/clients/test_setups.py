@@ -12,12 +12,16 @@ formulation_test = Formulation(chemicals=[compound_1, compound_2],
     amounts=[Amount(value=1,unit='mol'),Amount(value=1,unit='mol')], 
     ratio_method='molal')
 
+store_to_archive = ArchiveStorage(upload=True, 
+    append=False, existingRecord='')
+
 test_measurement = Measurement(
     formulation=formulation_test,
     temperature=temperature_test,
     pending=True,
     fom_data=[],
-    kind=Origin(origin='experiment',what='density'))
+    kind=Origin(origin='experiment',what='density'),
+    store_to_archive = store_to_archive)
 
 
        

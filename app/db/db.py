@@ -27,7 +27,7 @@ class dbinteraction:
         # fom data json table
         self.cur.execute("create table fomdata (value, unit, name, origin, measurement_id, id)")
         #measurement table
-        self.cur.execute("create table measurements (formulation_id, temperature_value, temperature_unit, pending ,fom_data_id ,kind ,json, id)")
+        self.cur.execute("create table measurements (formulation_id, temperature_value, temperature_unit, pending ,fom_data_id, upload_to_archive, existing_archive_record ,kind ,json, id)")
         self.con.commit()
         return {'message': 'reset complete'}
 
@@ -185,13 +185,14 @@ class dbinteraction:
         formulation_id = 0 #self.add_formulation(measurement.formulation)
         temperature_value = measurement.temperature.value# = Field(...)
         temperature_unit = measurement.temperature.unit# = Field(...)
+        upload_to_archive = measurement.store_to_archive.upload
+        existing_record = measurement.store_to_archive.existingRecord
         pending = measurement.pending
         kind = measurement.kind.origin.value
         json_ = measurement.json()
-        arr = [formulation_id,temperature_value,temperature_unit,pending,fom_id_,kind,json_, id_me]
+        arr = [formulation_id,temperature_value,temperature_unit,pending,fom_id_, upload_to_archive,existing_record ,kind,json_, id_me]
         qstr = '(' + ','.join(['?' for i in range(len(arr))]) + ')'
         self.cur.execute("insert into measurements values {}".format(qstr),arr)
-        print(id_me)
         return id_me
 
     def get_pending(self):
