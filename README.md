@@ -17,8 +17,10 @@ The exact layout is described in **link to chemRxiv** and is being submitted to 
 There is still lots of things to do that we currently consider to be work in progress
 
 1. :no_entry_sign: 100% complete adoption of BattINFO i.e. everything that is not yet covered
-2. :no_entry_sign: sign up form (no hardcoded users)
-3. :no_entry_sign: Capabilities
+2. :no_entry_sign: Sign up form (no hardcoded users)
+3. :no_entry_sign: Tenants can post their capabilities and uptime
+4. :no_entry_sign: Implementation of GraphDB
+
 # how to run
 Copy this repo and run docker build
 ```console
@@ -57,17 +59,3 @@ From the optimizer computer you can run
 foo@bar:~$ python3 mock_optimizer.py
 foo
 ```
-# todo 
-Prio 0:
-1. deploy somewhere public
-2. setup proper users and passwords
-
-Prio 1:
-1. PENDING: implement fidelity aware ML model from helge
-
-Prio 2:
-2. Write manuscript draft of the whole thing
-
-Prio unimportant:
-1. one could restructure database for more cross references to make it suitable for a graph database
-2. implement better database 
