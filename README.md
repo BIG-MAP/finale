@@ -1,3 +1,8 @@
+
+
+[![DOI](https://zenodo.org/badge/442139626.svg)](https://zenodo.org/badge/latestdoi/442139626)
+
+
 There have been many attempts at orchestrating single or multiple instruments; even laboratories exist that are automated but the real questions are: 
 
 > What really constitutes a materials platform?
